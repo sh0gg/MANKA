@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Issue index{% endblock %}
+
+{% block body %}
+    <h1>Issue index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>StartAt</th>
+                <th>EndAt</th>
+                <th>Hygiene</th>
+                <th>Comments</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for issue in issues %}
+            <tr>
+                <td>{{ issue.id }}</td>
+                <td>{{ issue.startAt ? issue.startAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ issue.endAt ? issue.endAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ issue.hygiene ? 'Yes' : 'No' }}</td>
+                <td>{{ issue.comments }}</td>
+                <td>
+                    <a href="{{ path('app_issue_show', {'id': issue.id}) }}">show</a>
+                    <a href="{{ path('app_issue_edit', {'id': issue.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_issue_new') }}">Create new</a>
+{% endblock %}

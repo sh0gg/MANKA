@@ -32,6 +32,7 @@ class Technician
 
     public function __construct()
     {
+        $this->active = true;
         $this->issues = new ArrayCollection();
     }
 

@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Issue{% endblock %}
+
+{% block body %}
+    <h1>Issue</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ issue.id }}</td>
+            </tr>
+            <tr>
+                <th>StartAt</th>
+                <td>{{ issue.startAt ? issue.startAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>EndAt</th>
+                <td>{{ issue.endAt ? issue.endAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Hygiene</th>
+                <td>{{ issue.hygiene ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Comments</th>
+                <td>{{ issue.comments }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_issue_index') }}">back to list</a>
+
+    <a href="{{ path('app_issue_edit', {'id': issue.id}) }}">edit</a>
+
+    {{ include('issue/_delete_form.html.twig') }}
+{% endblock %}
