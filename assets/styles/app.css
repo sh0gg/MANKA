@@ -1,13 +1,1 @@
-body {
-    background-color: white;
-    color: #151515;
-}
-
-a {
-    color: limegreen;
-}
-
-h1, h2, h3 {
-    font-weight: bolder;
-    color: greenyellow;
-}
+@import "tailwindcss";
