@@ -40,4 +40,21 @@ class IssueRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+
+    /**
+     * @return Issue[]
+     */
+    public function findAllOrderedByStatus(): array
+    {
+        return $this->createQueryBuilder('i')
+            // Añadimos una columna virtual 'is_open'.
+            // Si endAt es NULL, devuelve 1. Si no, 0.
+            ->addSelect('(CASE WHEN i.endAt IS NULL THEN 1 ELSE 0 END) as HIDDEN is_open')
+            // Primero ordenamos por esa columna (1 arriba, 0 abajo)
+            ->orderBy('is_open', 'DESC')
+            // Y dentro de cada grupo, el ID más reciente arriba
+            ->addOrderBy('i.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

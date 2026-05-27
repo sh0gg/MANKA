@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Pepe index{% endblock %}
+
+{% block body %}
+    <h1>Pepe index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for pepe in pepes %}
+            <tr>
+                <td>{{ pepe.id }}</td>
+                <td>{{ pepe.name }}</td>
+                <td>{{ pepe.age }}</td>
+                <td>
+                    <a href="{{ path('app_pepe_show', {'id': pepe.id}) }}">show</a>
+                    <a href="{{ path('app_pepe_edit', {'id': pepe.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_pepe_new') }}">Create new</a>
+{% endblock %}

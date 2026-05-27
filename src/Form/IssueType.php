@@ -9,6 +9,7 @@ use App\Entity\Technician;
 use App\Repository\TechnicianRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -17,7 +18,10 @@ class IssueType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('startAt')
+            ->add('startAt', DateTimeType::class, [
+                'label' => 'Fecha Inicio',
+                'label_attr' => ['class' => 'block text-sm/6 font-medium text-gray-900 sm:pt-1.5'],
+            ])
             ->add('endAt')
             ->add('hygiene')
             ->add('comments')

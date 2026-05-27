@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Pepe{% endblock %}
+
+{% block body %}
+    <h1>Edit Pepe</h1>
+
+    {{ include('pepe/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_pepe_index') }}">back to list</a>
+
+    {{ include('pepe/_delete_form.html.twig') }}
+{% endblock %}

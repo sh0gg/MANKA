@@ -1,41 +1,82 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Issue index{% endblock %}
+{% block title %}Incidencias - KiwiAtlantico{% endblock %}
 
 {% block body %}
-    <h1>Issue index</h1>
+    <div class="px-4 sm:px-6 lg:px-8">
+        <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+                <h1 class="text-xl font-semibold text-gray-900">Registro de Incidencias</h1>
+                <p class="mt-2 text-sm text-gray-700">Mantenimiento técnico y estado de líneas de producción.</p>
+            </div>
+            <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+                <a href="{{ path('app_issue_new') }}" class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 uppercase tracking-wider">
+                    Nueva incidencia
+                </a>
+            </div>
+        </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>StartAt</th>
-                <th>EndAt</th>
-                <th>Hygiene</th>
-                <th>Comments</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for issue in issues %}
-            <tr>
-                <td>{{ issue.id }}</td>
-                <td>{{ issue.startAt ? issue.startAt|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ issue.endAt ? issue.endAt|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ issue.hygiene ? 'Yes' : 'No' }}</td>
-                <td>{{ issue.comments }}</td>
-                <td>
-                    <a href="{{ path('app_issue_show', {'id': issue.id}) }}">show</a>
-                    <a href="{{ path('app_issue_edit', {'id': issue.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_issue_new') }}">Create new</a>
+        <div class="mt-8 flow-root">
+            <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                    <div class="overflow-hidden shadow-sm ring-1 ring-black/5 sm:rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-300">
+                            <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Estado</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Inicio</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Equipo</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Categoría</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Operarios</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Comentarios</th>
+                                <th scope="col" class="relative py-3.5 pl-3 pr-4 text-right text-sm font-semibold text-gray-900 sm:pr-6">Acciones</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                            {% for issue in issues %}
+                                <tr class="{{ issue.endAt is empty ? 'bg-indigo-50/30' : '' }} hover:bg-gray-50 transition-colors">
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                                        {% if issue.endAt is empty %}
+                                            <span class="inline-flex items-center gap-x-1.5 rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
+                                                <svg class="h-1.5 w-1.5 fill-red-500 animate-pulse" viewBox="0 0 6 6" aria-hidden="true"><circle cx="3" cy="3" r="3" /></svg>
+                                                Abierta
+                                            </span>
+                                        {% else %}
+                                            <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                                                Terminada
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
+                                        {{ issue.startAt ? issue.startAt|date('d/m/Y H:i') : '--' }}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
+                                        {{ issue.device.name|default('N/A') }}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                        {{ issue.category.name|default('N/A') }}
+                                    </td>
+                                    <td class="px-3 py-4 text-sm text-gray-500">
+                                        {{ issue.technician|join(', ') }}
+                                    </td>
+                                    <td class="px-3 py-4 text-sm text-gray-500 italic max-w-xs truncate">
+                                        {{ issue.comments }}
+                                    </td>
+                                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 space-x-3">
+                                        <a href="{{ path('app_issue_show', {'id': issue.id}) }}" class="text-indigo-600 hover:text-indigo-900">Ver</a>
+                                        <a href="{{ path('app_issue_edit', {'id': issue.id}) }}" class="text-indigo-600 hover:text-indigo-900">Editar</a>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="py-10 text-center text-sm text-gray-500">No hay incidencias registradas</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

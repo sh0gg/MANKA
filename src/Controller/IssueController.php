@@ -18,7 +18,7 @@ final class IssueController extends AbstractController
     public function index(IssueRepository $issueRepository): Response
     {
         return $this->render('issue/index.html.twig', [
-            'issues' => $issueRepository->findAll(),
+            'issues' => $issueRepository->findAllOrderedByStatus(),
         ]);
     }
 
