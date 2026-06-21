@@ -1,0 +1,11 @@
+{{ form_start(form) }}
+    {% set global_errors = form_errors(form) %}
+    {% if global_errors|length > 0 %}
+        <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ global_errors }}</div>
+    {% endif %}
+    {{ form_row(form.name) }}
+    <div class="mt-2 flex justify-end gap-2">
+        <a href="{{ path('app_admin_device_index') }}" class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Cancelar</a>
+        <button type="submit" class="inline-flex items-center rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover">{{ button_label|default('Gardar') }}</button>
+    </div>
+{{ form_end(form) }}

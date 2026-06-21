@@ -1,0 +1,102 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div data-controller="sidebar" class="min-h-full">
+
+    {# Overlay de fondo en móbil, ao abrir o sidebar #}
+    <div data-sidebar-target="overlay" data-action="click->sidebar#close"
+         class="fixed inset-0 z-40 hidden bg-slate-900/45 lg:hidden"></div>
+
+    {# Sidebar #}
+    <aside data-sidebar-target="panel"
+           class="fixed inset-y-0 left-0 z-50 flex w-60 -translate-x-full flex-col bg-brand transition-transform duration-200 ease-in-out lg:translate-x-0"
+           data-action="keydown.esc@window->sidebar#closeOnEscape resize@window->sidebar#closeOnDesktop">
+        <div class="flex items-center gap-2.5 border-b border-white/10 px-5 py-4">
+            {{ include('_components/logo.html.twig', {size: 28, class: 'text-white'}) }}
+            <span class="text-lg font-bold tracking-wide text-white">MANKA</span>
+        </div>
+
+        <nav class="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2.5 py-3">
+            <div class="px-2.5 pt-2.5 pb-1 text-[0.68rem] font-semibold tracking-wider text-white/35 uppercase">Principal</div>
+
+            <a href="{{ path('app_issue_index') }}"
+               class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition {{ app.request.attributes.get('_route') starts with 'app_issue' ? 'bg-white/15 text-white' : 'text-white/65 hover:bg-white/10 hover:text-white' }}">
+                <svg class="size-[17px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Incidencias
+            </a>
+
+            {% if is_granted('ROLE_ADMIN') %}
+                <div class="px-2.5 pt-4 pb-1 text-[0.68rem] font-semibold tracking-wider text-white/35 uppercase">Administración</div>
+
+                <a href="{{ path('app_admin_user_index') }}" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition {{ app.request.attributes.get('_route') starts with 'app_admin_user' ? 'bg-white/15 text-white' : 'text-white/65 hover:bg-white/10 hover:text-white' }}">
+                    <svg class="size-[17px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="7" r="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 21v-2a4 4 0 00-3-3.87" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 3.13a4 4 0 010 7.75" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Usuarios
+                </a>
+                <a href="{{ path('app_admin_device_index') }}" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition {{ app.request.attributes.get('_route') starts with 'app_admin_device' ? 'bg-white/15 text-white' : 'text-white/65 hover:bg-white/10 hover:text-white' }}">
+                    <svg class="size-[17px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="12" rx="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 20h8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 16v4" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 8h4" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 12h2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Equipos
+                </a>
+                <a href="{{ path('app_admin_category_index') }}" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition {{ app.request.attributes.get('_route') starts with 'app_admin_category' ? 'bg-white/15 text-white' : 'text-white/65 hover:bg-white/10 hover:text-white' }}">
+                    <svg class="size-[17px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Categorías
+                </a>
+                <a href="{{ path('app_admin_token_index') }}" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition {{ app.request.attributes.get('_route') starts with 'app_admin_token' ? 'bg-white/15 text-white' : 'text-white/65 hover:bg-white/10 hover:text-white' }}">
+                    <svg class="size-[17px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    API Tokens
+                </a>
+            {% endif %}
+
+            <div class="flex-1"></div>
+
+            <a href="{{ path('app_logout') }}" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-white/65 transition hover:bg-white/10 hover:text-white">
+                <svg class="size-[17px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Pechar sesión
+            </a>
+        </nav>
+
+        <div class="flex items-center gap-2.5 border-t border-white/10 px-5 py-3.5">
+            <div class="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-[0.7rem] font-bold text-white">
+                {{ app.user.initials }}
+            </div>
+            <div class="min-w-0">
+                <div class="truncate text-sm font-semibold text-white">{{ app.user.fullName }}</div>
+                <div class="truncate text-[0.68rem] text-white/45">
+                    {% if is_granted('ROLE_ADMIN') %}Administrador
+                    {% elseif is_granted('ROLE_TECHNICIAN') %}Técnico de mantemento
+                    {% else %}Traballador de planta
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    {# Barra superior, só visible en móbil #}
+    <div class="sticky top-0 z-30 flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-3 lg:hidden">
+        <button type="button" data-action="sidebar#toggle" aria-label="Abrir menú"
+                class="flex size-8 items-center justify-center rounded-lg text-brand hover:bg-brand/10">
+            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+        <span class="text-sm font-semibold text-gray-900">MANKA</span>
+    </div>
+
+    <main class="lg:pl-60">
+        <div class="px-4 py-7 sm:px-6 lg:px-8">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+{% endblock %}

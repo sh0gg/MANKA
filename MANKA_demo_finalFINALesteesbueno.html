@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="gl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MANKA — Demo</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+
+:root {
+  --brand: #1e3a5f;
+  --brand-light: #2e5fa3;
+  --brand-hover: #162d4a;
+  --accent: #e8f0f8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: #f9fafb;
+  color: #111827;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ══════════════════════════════════════
+   LOGIN
+══════════════════════════════════════ */
+#screen-login {
+  min-height: 100vh;
+  display: none;
+  flex-direction: row;
+}
+#screen-login.active { display: flex; }
+
+.split-left {
+  width: 45%;
+  background: var(--brand);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 48px;
+  position: relative;
+  overflow: hidden;
+}
+.split-left::before {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+  top: -100px; right: -100px;
+}
+.split-left::after {
+  content: '';
+  position: absolute;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+  bottom: -80px; left: -60px;
+}
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+.brand-name {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.1em;
+}
+.brand-tagline {
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.6);
+  max-width: 260px;
+  line-height: 1.5;
+}
+.split-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  background: #f1f5f9;
+}
+.login-card { width: 100%; max-width: 400px; }
+.login-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 6px;
+}
+.login-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+.role-btn {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 10px;
+  border: 1.5px solid #e5e7eb;
+  background: white;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  transition: all 0.15s;
+  text-align: left;
+}
+.role-btn:hover {
+  border-color: var(--brand-light);
+  background: #f0f6ff;
+  transform: translateX(3px);
+}
+.role-btn .role-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.role-btn .role-desc {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #6b7280;
+  margin-top: 1px;
+}
+.role-btn-inner { flex: 1; }
+.role-btn-inner .role-label { display: block; }
+.powered {
+  margin-top: 32px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+.powered span { color: var(--brand-light); font-weight: 600; }
+.btn-login {
+  width: 100%; padding: 11px;
+  background: var(--brand); color: white;
+  border: none; border-radius: 8px;
+  font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+  margin-top: 6px; transition: background 0.15s;
+}
+.btn-login:hover { background: var(--brand-hover); }
+#login-step1 .form-group { margin-bottom: 16px; }
+#login-step1 input {
+  width: 100%; padding: 10px 14px;
+  border: 1.5px solid #e5e7eb; border-radius: 8px;
+  font-size: 0.9rem; color: #111827; background: white;
+  outline: none; font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+#login-step1 input:focus {
+  border-color: var(--brand-light);
+  box-shadow: 0 0 0 3px rgba(46,95,163,0.12);
+}
+
+/* ══════════════════════════════════════
+   APP SHELL (sidebar + main)
+══════════════════════════════════════ */
+#screen-app {
+  display: none;
+  min-height: 100vh;
+}
+#screen-app.active { display: block; }
+
+.sidebar {
+  position: fixed;
+  inset-y: 0; left: 0;
+  width: 240px;
+  background: var(--brand);
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+}
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.sidebar-logo span {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.05em;
+}
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sidebar-section-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 10px 10px 3px;
+}
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  color: rgba(255,255,255,0.65);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.15s;
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+  width: 100%;
+  text-align: left;
+}
+.nav-link:hover { background: rgba(255,255,255,0.09); color: white; }
+.nav-link.active { background: rgba(255,255,255,0.14); color: white; }
+.nav-link svg { width: 17px; height: 17px; flex-shrink: 0; }
+
+.nav-spacer { flex: 1; }
+
+.sidebar-footer {
+  padding: 14px 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+.user-name { font-size: 0.8rem; font-weight: 600; color: white; }
+.user-role { font-size: 0.68rem; color: rgba(255,255,255,0.45); }
+
+.main {
+  margin-left: 240px;
+  min-height: 100vh;
+  padding: 28px 32px;
+}
+
+/* ══════════════════════════════════════
+   SHARED COMPONENTS
+══════════════════════════════════════ */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.page-title { font-size: 1.3rem; font-weight: 700; color: #111827; margin-bottom: 3px; }
+.page-subtitle { font-size: 0.85rem; color: #6b7280; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; border: none;
+  text-decoration: none;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.btn-primary { background: var(--brand); color: white; }
+.btn-primary:hover { background: var(--brand-hover); }
+.btn-secondary { background: white; color: #374151; border: 1px solid #d1d5db; }
+.btn-secondary:hover { background: #f9fafb; }
+.btn-danger { background: #fee2e2; color: #dc2626; }
+.btn-danger:hover { background: #fecaca; }
+.btn-sm { padding: 5px 10px; font-size: 0.78rem; }
+.btn-success { background: #dcfce7; color: #16a34a; }
+.btn-success:hover { background: #bbf7d0; }
+
+.card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+thead { background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+th {
+  text-align: left; padding: 10px 16px;
+  font-size: 0.72rem; font-weight: 600;
+  color: #6b7280; text-transform: uppercase;
+  letter-spacing: 0.05em; white-space: nowrap;
+}
+td { padding: 13px 16px; border-bottom: 1px solid #f3f4f6; color: #374151; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafafa; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 600; white-space: nowrap;
+}
+.badge-open { background: #fef2f2; color: #dc2626; }
+.badge-open::before {
+  content: ''; width: 6px; height: 6px;
+  border-radius: 50%; background: #ef4444;
+  animation: pulse 1.5s infinite;
+}
+.badge-closed { background: #f0fdf4; color: #16a34a; }
+.badge-preventivo { background: #eff6ff; color: #2563eb; }
+.badge-correctivo { background: #fff7ed; color: #ea580c; }
+.role-user { background: #eff6ff; color: #2563eb; }
+.role-technician { background: #f0fdf4; color: #16a34a; }
+.role-admin { background: #faf5ff; color: #7c3aed; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Stats */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: white; border: 1px solid #e5e7eb;
+  border-radius: 12px; padding: 18px;
+}
+.stat-label { font-size: 0.72rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+.stat-value { font-size: 1.7rem; font-weight: 700; color: #111827; }
+.stat-sub { font-size: 0.72rem; color: #9ca3af; margin-top: 2px; }
+
+/* Forms */
+.form-group { margin-bottom: 18px; }
+label { display: block; font-size: 0.85rem; font-weight: 500; color: #374151; margin-bottom: 5px; }
+input[type="text"], input[type="email"], input[type="datetime-local"], select, textarea {
+  width: 100%; padding: 9px 12px;
+  border: 1px solid #d1d5db; border-radius: 8px;
+  font-size: 0.85rem; color: #111827; background: white;
+  transition: border-color 0.15s; outline: none; font-family: inherit;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--brand-light);
+  box-shadow: 0 0 0 3px rgba(46,95,163,0.1);
+}
+textarea { resize: vertical; min-height: 78px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.checkbox-group { display: flex; flex-wrap: wrap; gap: 7px; }
+.checkbox-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border: 1px solid #e5e7eb;
+  border-radius: 8px; cursor: pointer; font-size: 0.85rem; background: white;
+}
+.checkbox-item input { margin: 0; accent-color: var(--brand); }
+
+/* Detail */
+.detail-item label { font-size: 0.7rem; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
+.detail-item .value { font-size: 0.88rem; color: #111827; font-weight: 500; }
+.detail-list { padding: 16px 20px; display: flex; flex-direction: column; gap: 13px; }
+.section-title {
+  font-size: 0.72rem; font-weight: 700; color: #6b7280;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  padding: 14px 20px 11px; border-bottom: 1px solid #f3f4f6;
+}
+
+/* Observations */
+.obs-list { display: flex; flex-direction: column; gap: 11px; }
+.obs-item { display: flex; gap: 10px; }
+.obs-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 0.68rem; font-weight: 700; color: white;
+}
+.obs-bubble {
+  flex: 1; background: #f9fafb; border: 1px solid #e5e7eb;
+  border-radius: 0 10px 10px 10px; padding: 9px 13px;
+}
+.obs-meta { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; flex-wrap: wrap; }
+.obs-author { font-size: 0.78rem; font-weight: 600; color: #111827; }
+.obs-date { font-size: 0.72rem; color: #9ca3af; }
+.obs-role { font-size: 0.68rem; padding: 1px 6px; border-radius: 4px; font-weight: 600; }
+.obs-content { font-size: 0.85rem; color: #374151; line-height: 1.5; }
+.obs-input-area { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+.obs-section { padding: 14px 18px; }
+
+/* Back link */
+.back-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.85rem; color: #6b7280; text-decoration: none;
+  margin-bottom: 18px; font-weight: 500; cursor: pointer;
+  background: none; border: none; font-family: inherit;
+}
+.back-link:hover { color: #111827; }
+
+/* Two col */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+
+/* Admin */
+.tabs {
+  display: flex; gap: 3px; margin-bottom: 20px;
+  background: white; border: 1px solid #e5e7eb;
+  border-radius: 10px; padding: 3px; width: fit-content;
+}
+.tab {
+  padding: 6px 14px; border-radius: 7px;
+  font-size: 0.85rem; font-weight: 500;
+  cursor: pointer; border: none; background: none;
+  color: #6b7280; font-family: inherit; transition: all 0.15s;
+}
+.tab.active { background: var(--brand); color: white; }
+.tab:hover:not(.active) { background: #f3f4f6; color: #111827; }
+
+.user-cell { display: flex; align-items: center; gap: 9px; }
+.user-cell .name { font-weight: 600; font-size: 0.85rem; }
+.user-cell .email { font-size: 0.72rem; color: #6b7280; }
+
+.status-dot { display: inline-flex; align-items: center; gap: 5px; font-size: 0.78rem; }
+.status-dot::before { content: ''; width: 7px; height: 7px; border-radius: 50%; }
+.status-dot.active::before { background: #16a34a; }
+.status-dot.inactive::before { background: #9ca3af; }
+
+.token-card {
+  background: #f9fafb; border: 1px solid #e5e7eb;
+  border-radius: 10px; padding: 18px; margin-bottom: 14px;
+}
+.token-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.token-name { font-weight: 600; font-size: 0.88rem; }
+.token-value {
+  font-family: monospace; font-size: 0.78rem; color: #6b7280;
+  background: white; border: 1px solid #e5e7eb;
+  border-radius: 6px; padding: 7px 11px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;
+  word-break: break-all;
+}
+.token-meta { display: flex; gap: 14px; font-size: 0.72rem; color: #9ca3af; flex-wrap: wrap; }
+
+/* Role selector pill */
+.role-selector {
+  display: flex; align-items: center; gap: 8px;
+  background: white; border: 1px solid #e5e7eb;
+  border-radius: 8px; padding: 6px 12px;
+  font-size: 0.78rem; color: #6b7280; cursor: pointer;
+}
+.role-selector select {
+  border: none; background: none; font-size: 0.78rem;
+  color: var(--brand); font-weight: 600; cursor: pointer;
+  outline: none; padding: 0; width: auto;
+}
+
+/* Tabs móbil admin - só visibles en móbil, sticky */
+.admin-tabs-mobile {
+  display: none;
+}
+@media (max-width: 1024px) {
+  .admin-tabs-mobile {
+    display: flex;
+    gap: 3px;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: #f9fafb;
+    padding: 10px 0 8px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .admin-tabs-mobile .tab { white-space: nowrap; }
+}
+
+/* Form card */
+.form-card { max-width: 680px; }
+.form-body { padding: 20px 24px; }
+.form-footer {
+  padding: 14px 24px; border-top: 1px solid #f3f4f6;
+  display: flex; justify-content: flex-end; gap: 8px;
+}
+
+/* Issue title block */
+.issue-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; gap: 14px; }
+.issue-title-block h1 { font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; }
+.issue-meta { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.issue-actions { display: flex; gap: 7px; flex-shrink: 0; }
+
+/* Notification bar */
+.role-bar {
+  background: var(--accent);
+  border-bottom: 1px solid #c7d9f0;
+  padding: 8px 32px;
+  font-size: 0.78rem;
+  color: var(--brand);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.role-bar strong { font-weight: 700; }
+
+
+/* ══════════════════════════════════════
+   RESPONSIVE / MOBILE NAVIGATION
+══════════════════════════════════════ */
+.mobile-menu-toggle {
+  display: none;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(30,58,95,0.08);
+  color: var(--brand);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mobile-menu-toggle svg {
+  width: 21px;
+  height: 21px;
+}
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.45);
+  z-index: 45;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.sidebar-overlay.active {
+  opacity: 1;
+}
+body.sidebar-open {
+  overflow: hidden;
+}
+
+@media (max-width: 1024px) {
+  #screen-login.active {
+    flex-direction: column;
+  }
+  .split-left {
+    width: 100%;
+    min-height: 260px;
+    padding: 36px 24px;
+  }
+  .split-right {
+    padding: 32px 20px;
+  }
+  .brand-name {
+    font-size: 2rem;
+  }
+  .brand-tagline {
+    max-width: 320px;
+  }
+
+  .mobile-menu-toggle {
+    display: inline-flex;
+  }
+  .role-bar {
+    position: sticky;
+    top: 0;
+    z-index: 70;
+    padding: 8px 14px;
+    gap: 10px;
+  }
+  .role-bar span {
+    flex: 1;
+    min-width: 0;
+  }
+  .role-bar > button:not(.mobile-menu-toggle) {
+    white-space: nowrap;
+  }
+  .sidebar {
+    top: 0 !important;
+    height: 100vh !important;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    box-shadow: 14px 0 36px rgba(15,23,42,0.18);
+  }
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  .sidebar-overlay {
+    display: block;
+    pointer-events: none;
+  }
+  .sidebar-overlay.active {
+    pointer-events: auto;
+  }
+  .main {
+    margin-left: 0 !important;
+    margin-top: 0 !important;
+    padding: 22px 18px;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+  .page-header,
+  .issue-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .page-header .btn,
+  .issue-actions .btn {
+    width: fit-content;
+  }
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  .form-card {
+    max-width: none;
+  }
+  table {
+    min-width: 760px;
+  }
+}
+
+@media (max-width: 640px) {
+  .role-bar {
+    font-size: 0.72rem;
+  }
+  .role-bar > button:not(.mobile-menu-toggle) {
+    font-size: 0.72rem !important;
+  }
+  .main {
+    padding: 18px 14px;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .stat-card {
+    padding: 14px;
+  }
+  .stat-value {
+    font-size: 1.45rem;
+  }
+  .card {
+    border-radius: 10px;
+  }
+  .form-body,
+  .form-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .form-footer {
+    flex-direction: column-reverse;
+  }
+  .form-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .issue-actions {
+    flex-wrap: wrap;
+  }
+  .issue-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .split-left {
+    min-height: 220px;
+  }
+  .split-right {
+    padding: 26px 16px;
+  }
+}
+
+
+
+/* ══════════════════════════════════════
+   MOBILE POLISH / SPACING REFINEMENTS
+   Solo ajustes visuales: no modifica funciones ni JS
+══════════════════════════════════════ */
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 106px;
+}
+.stat-label {
+  line-height: 1.25;
+}
+.stat-value {
+  line-height: 1.05;
+  margin-bottom: 4px;
+}
+.stat-sub {
+  line-height: 1.35;
+}
+.page-title,
+.issue-title-block h1 {
+  line-height: 1.2;
+}
+.page-subtitle {
+  line-height: 1.45;
+  margin-top: 4px;
+}
+.table-wrap {
+  border-radius: inherit;
+}
+td {
+  line-height: 1.35;
+}
+
+@media (max-width: 1024px) {
+  .main {
+    padding-top: 20px;
+  }
+  .stats-grid {
+    gap: 12px;
+    margin-bottom: 26px;
+  }
+  .stat-card {
+    padding: 17px 18px;
+  }
+  .page-header {
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .page-header .btn {
+    margin-top: 2px;
+  }
+  .card + .card,
+  .two-col + .card {
+    margin-top: 16px;
+  }
+  th,
+  td {
+    padding: 12px 16px;
+  }
+  td:nth-child(2),
+  td:nth-child(3),
+  td:nth-child(5),
+  td:nth-child(6),
+  td:nth-child(7) {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .role-bar {
+    min-height: 48px;
+    padding: 7px 14px;
+  }
+  .role-bar span {
+    line-height: 1.25;
+  }
+  .main {
+    padding: 18px 16px 28px;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    min-height: 108px;
+    padding: 16px 14px;
+  }
+  .stat-label {
+    font-size: 0.68rem;
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-size: 1.55rem;
+    margin-bottom: 5px;
+  }
+  .stat-sub {
+    font-size: 0.7rem;
+  }
+  .page-header {
+    margin-bottom: 22px;
+  }
+  .page-title {
+    font-size: 1.25rem;
+    margin-bottom: 5px;
+  }
+  .page-subtitle {
+    font-size: 0.82rem;
+  }
+  .page-header .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 14px;
+  }
+  .card {
+    border-radius: 12px;
+  }
+  .table-wrap {
+    margin-top: 2px;
+  }
+  table {
+    min-width: 720px;
+  }
+  th {
+    padding-top: 13px;
+    padding-bottom: 11px;
+  }
+  td {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+  .badge {
+    padding: 4px 10px;
+  }
+  .form-body {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+  .form-group {
+    margin-bottom: 16px;
+  }
+  .detail-list {
+    padding: 18px;
+    gap: 15px;
+  }
+  .obs-section {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 380px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .stat-card {
+    min-height: auto;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════ -->
+<div id="screen-login" class="screen active">
+  <div class="split-left">
+    <div class="brand">
+      <svg id="Capa_2" data-name="Capa 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 92.46 92.45" aria-hidden="true" focusable="false" width="64" height="64">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+        stroke-width: 0px;
+      }
+    </style>
+  </defs>
+  <g id="PRINT">
+    <g id="CUSTOM-Group">
+      <path class="cls-1" d="m90.08,70.92l-25.68-25.68c-.31-.31-.65-.6-1-.85l6.76-6.76c6.06,1.08,12.36-.87,16.75-5.26,5.67-5.67,7.16-14.35,3.71-21.58-.81-1.69-3.04-2.07-4.36-.75-1.61,1.61-.2.24-8.1,7.84h-3.57v-3.57c7.6-7.89,6.23-6.49,7.84-8.1,1.32-1.32.94-3.55-.75-4.36-7.24-3.46-15.91-1.97-21.58,3.71-4.39,4.39-6.34,10.69-5.26,16.75l-6.69,6.69-2.15-2.15c-1.06-1.06-2.77-1.06-3.83,0l-1.92,1.92-13.76-13.76v-6.54c0-1.17-.75-2.2-1.85-2.57L7.4.14c-.97-.32-2.05-.07-2.77.65L.79,4.62C.07,5.35-.19,6.42.14,7.4l5.75,17.24c.37,1.11,1.4,1.85,2.57,1.85h6.54l13.76,13.76-1.92,1.92c-1.06,1.06-1.06,2.77,0,3.83l2.15,2.15-6.69,6.69c-6.06-1.08-12.36.87-16.75,5.26-7.39,7.39-7.39,19.42,0,26.81,7.39,7.39,19.42,7.39,26.81,0,4.39-4.39,6.34-10.69,5.26-16.75l6.76-6.76c.26.35.54.69.85,1l25.68,25.68c3.17,3.17,8.32,3.17,11.49,0,4.31-4.31,4.55-4.55,7.66-7.66,3.17-3.17,3.17-8.32,0-11.49Zm-30.37-45.84c.68-.68.95-1.68.7-2.61-1.25-4.66.1-9.68,3.51-13.09,3.08-3.08,7.39-4.43,11.56-3.82l-5.56,5.78c-.49.5-.76,1.18-.76,1.88v7.37c0,1.5,1.21,2.71,2.71,2.71h7.37c.7,0,1.37-.27,1.88-.76l5.78-5.56c.61,4.16-.74,8.48-3.82,11.56-3.41,3.41-8.42,4.75-13.09,3.51-.93-.25-1.93.02-2.61.7l-9.6,9.6c-2.44-1.03-4.25-3.21-4.79-5.88-.21-1.03-.36-2.11-1.18-3.47l7.91-7.91Zm-41.68-3.22c-.51-.51-1.2-.79-1.92-.79h-5.71L5.81,7.27l1.46-1.46,13.8,4.6v5.71c0,.72.29,1.41.79,1.92l14.56,14.56-3.83,3.83-14.56-14.56Zm14.71,45.51c-.68.68-.95,1.68-.7,2.61,1.25,4.66-.1,9.68-3.51,13.09-5.28,5.28-13.87,5.28-19.15,0-5.28-5.28-5.28-13.87,0-19.15,3.41-3.41,8.42-4.75,13.09-3.51.93.25,1.93-.02,2.61-.7l7.91-7.91c1.35.81,2.42.97,3.47,1.18,2.67.53,4.85,2.35,5.88,4.79l-9.6,9.6Zm53.5,11.21l-1.92,1.92-24.93-24.93c-1.06-1.06-2.77-1.06-3.83,0-1.06,1.06-1.06,2.77,0,3.83l24.93,24.93-1.92,1.92c-1.06,1.06-2.77,1.06-3.83,0l-25.68-25.68c-.68-.68-.73-1.34-.92-2.27-1.08-5.38-5.25-9.55-10.62-10.62-.93-.19-1.59-.24-2.27-.92l-2.67-2.67,11.49-11.49,2.67,2.67c.68.68.73,1.34.92,2.27,1.08,5.38,5.25,9.55,10.62,10.62.93.19,1.59.24,2.27.92l25.68,25.68c1.06,1.06,1.06,2.77,0,3.83Z"/>
+      <path class="cls-1" d="m24.71,67.75c-3.18-3.18-8.32-3.18-11.49,0-3.17,3.17-3.17,8.32,0,11.49s8.32,3.18,11.49,0c3.17-3.17,3.17-8.32,0-11.49Zm-3.83,7.66c-1.06,1.06-2.77,1.06-3.83,0s-1.06-2.77,0-3.83c1.06-1.06,2.77-1.06,3.83,0,1.06,1.06,1.06,2.77,0,3.83Z"/>
+    </g>
+  </g>
+</svg>
+      <div class="brand-name">MANKA</div>
+      <div class="brand-tagline">Sistema de xestión de incidencias de mantemento industrial</div>
+    </div>
+  </div>
+  <div class="split-right">
+    <div class="login-card">
+
+      <!-- PASO 1: Formulario de login -->
+      <div id="login-step1">
+        <div class="login-title">Benvido de volta</div>
+        <div class="login-subtitle">Accede coas túas credenciais de empresa</div>
+        <div class="form-group">
+          <label for="email">Correo electrónico</label>
+          <input type="email" id="email" placeholder="usuario@empresa.com" value="martin@kiwiatlantico.com">
+        </div>
+        <div class="form-group">
+          <label for="password">Contrasinal</label>
+          <input type="password" id="password" placeholder="••••••••" value="12345678">
+        </div>
+        <button class="btn-login" onclick="showRoleStep()">Acceder</button>
+        <div class="powered">Desenvolvido por <span>Galicloud S. Coop. Galega</span></div>
+      </div>
+
+      <!-- PASO 2: Selección de rol (demo) -->
+      <div id="login-step2" style="display:none">
+        <div class="login-title">Selecciona o perfil</div>
+        <div class="login-subtitle" style="margin-bottom:20px">
+          <span style="display:inline-flex;align-items:center;gap:6px;background:#f0fdf4;color:#16a34a;font-weight:600;padding:4px 10px;border-radius:6px;font-size:0.78rem;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Credenciais verificadas
+          </span>
+          <span style="display:block;margin-top:8px;color:#6b7280">Esta é unha demo. Escolla a vista que quere explorar.</span>
+        </div>
+
+        <button class="role-btn" onclick="login('user')">
+          <div class="role-icon" style="background:#eff6ff">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="role-btn-inner">
+            <span class="role-label">Traballador de planta</span>
+            <div class="role-desc">Abre incidencias e engade observacións</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round"/></svg>
+        </button>
+
+        <button class="role-btn" onclick="login('technician')">
+          <div class="role-icon" style="background:#f0fdf4">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="role-btn-inner">
+            <span class="role-label">Técnico de mantemento</span>
+            <div class="role-desc">Xestiona e resolve incidencias</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round"/></svg>
+        </button>
+
+        <button class="role-btn" onclick="login('admin')">
+          <div class="role-icon" style="background:#faf5ff">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="role-btn-inner">
+            <span class="role-label">Administrador</span>
+            <div class="role-desc">Acceso completo: usuarios, equipos e API tokens</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round"/></svg>
+        </button>
+
+        <button onclick="backToLogin()" style="background:none;border:none;font-family:inherit;font-size:0.78rem;color:#9ca3af;cursor:pointer;margin-top:12px;display:block;width:100%;text-align:center;">← Volver ao login</button>
+        <div class="powered">Desenvolvido por <span>Galicloud S. Coop. Galega</span></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APP SCREEN
+══════════════════════════════════════ -->
+<div id="screen-app" class="screen">
+
+  <!-- Role bar -->
+  <div class="role-bar">
+    <button class="mobile-menu-toggle" type="button" onclick="toggleSidebar()" aria-label="Abrir menú" aria-controls="app-sidebar" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+    <span>Demo MANKA · Rol activo: <strong id="role-bar-label">—</strong></span>
+    <button onclick="logout()" style="background:none;border:none;cursor:pointer;font-size:0.78rem;color:var(--brand);font-weight:600;font-family:inherit;">← Cambiar rol</button>
+  </div>
+  <div class="sidebar-overlay" onclick="closeSidebar()" aria-hidden="true"></div>
+
+  <!-- Sidebar -->
+  <aside id="app-sidebar" class="sidebar" style="top:37px; height:calc(100vh - 37px);">
+    <div class="sidebar-logo">
+      <svg id="Capa_2" data-name="Capa 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 92.46 92.45" aria-hidden="true" focusable="false" width="28" height="28">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+        stroke-width: 0px;
+      }
+    </style>
+  </defs>
+  <g id="PRINT">
+    <g id="CUSTOM-Group">
+      <path class="cls-1" d="m90.08,70.92l-25.68-25.68c-.31-.31-.65-.6-1-.85l6.76-6.76c6.06,1.08,12.36-.87,16.75-5.26,5.67-5.67,7.16-14.35,3.71-21.58-.81-1.69-3.04-2.07-4.36-.75-1.61,1.61-.2.24-8.1,7.84h-3.57v-3.57c7.6-7.89,6.23-6.49,7.84-8.1,1.32-1.32.94-3.55-.75-4.36-7.24-3.46-15.91-1.97-21.58,3.71-4.39,4.39-6.34,10.69-5.26,16.75l-6.69,6.69-2.15-2.15c-1.06-1.06-2.77-1.06-3.83,0l-1.92,1.92-13.76-13.76v-6.54c0-1.17-.75-2.2-1.85-2.57L7.4.14c-.97-.32-2.05-.07-2.77.65L.79,4.62C.07,5.35-.19,6.42.14,7.4l5.75,17.24c.37,1.11,1.4,1.85,2.57,1.85h6.54l13.76,13.76-1.92,1.92c-1.06,1.06-1.06,2.77,0,3.83l2.15,2.15-6.69,6.69c-6.06-1.08-12.36.87-16.75,5.26-7.39,7.39-7.39,19.42,0,26.81,7.39,7.39,19.42,7.39,26.81,0,4.39-4.39,6.34-10.69,5.26-16.75l6.76-6.76c.26.35.54.69.85,1l25.68,25.68c3.17,3.17,8.32,3.17,11.49,0,4.31-4.31,4.55-4.55,7.66-7.66,3.17-3.17,3.17-8.32,0-11.49Zm-30.37-45.84c.68-.68.95-1.68.7-2.61-1.25-4.66.1-9.68,3.51-13.09,3.08-3.08,7.39-4.43,11.56-3.82l-5.56,5.78c-.49.5-.76,1.18-.76,1.88v7.37c0,1.5,1.21,2.71,2.71,2.71h7.37c.7,0,1.37-.27,1.88-.76l5.78-5.56c.61,4.16-.74,8.48-3.82,11.56-3.41,3.41-8.42,4.75-13.09,3.51-.93-.25-1.93.02-2.61.7l-9.6,9.6c-2.44-1.03-4.25-3.21-4.79-5.88-.21-1.03-.36-2.11-1.18-3.47l7.91-7.91Zm-41.68-3.22c-.51-.51-1.2-.79-1.92-.79h-5.71L5.81,7.27l1.46-1.46,13.8,4.6v5.71c0,.72.29,1.41.79,1.92l14.56,14.56-3.83,3.83-14.56-14.56Zm14.71,45.51c-.68.68-.95,1.68-.7,2.61,1.25,4.66-.1,9.68-3.51,13.09-5.28,5.28-13.87,5.28-19.15,0-5.28-5.28-5.28-13.87,0-19.15,3.41-3.41,8.42-4.75,13.09-3.51.93.25,1.93-.02,2.61-.7l7.91-7.91c1.35.81,2.42.97,3.47,1.18,2.67.53,4.85,2.35,5.88,4.79l-9.6,9.6Zm53.5,11.21l-1.92,1.92-24.93-24.93c-1.06-1.06-2.77-1.06-3.83,0-1.06,1.06-1.06,2.77,0,3.83l24.93,24.93-1.92,1.92c-1.06,1.06-2.77,1.06-3.83,0l-25.68-25.68c-.68-.68-.73-1.34-.92-2.27-1.08-5.38-5.25-9.55-10.62-10.62-.93-.19-1.59-.24-2.27-.92l-2.67-2.67,11.49-11.49,2.67,2.67c.68.68.73,1.34.92,2.27,1.08,5.38,5.25,9.55,10.62,10.62.93.19,1.59.24,2.27.92l25.68,25.68c1.06,1.06,1.06,2.77,0,3.83Z"/>
+      <path class="cls-1" d="m24.71,67.75c-3.18-3.18-8.32-3.18-11.49,0-3.17,3.17-3.17,8.32,0,11.49s8.32,3.18,11.49,0c3.17-3.17,3.17-8.32,0-11.49Zm-3.83,7.66c-1.06,1.06-2.77,1.06-3.83,0s-1.06-2.77,0-3.83c1.06-1.06,2.77-1.06,3.83,0,1.06,1.06,1.06,2.77,0,3.83Z"/>
+    </g>
+  </g>
+</svg>
+      <span>MANKA</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Principal</div>
+      <button class="nav-link active" id="nav-issues" onclick="showView('issues')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Incidencias
+      </button>
+
+      <!-- Admin only -->
+      <div id="nav-admin-section" style="display:none">
+        <div class="sidebar-section-label">Administración</div>
+        <button class="nav-link" id="nav-usuarios" onclick="showAdmin('usuarios')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M16 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="7" r="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 21v-2a4 4 0 00-3-3.87" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 3.13a4 4 0 010 7.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Usuarios
+        </button>
+        <button class="nav-link" id="nav-equipos" onclick="showAdmin('equipos')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="12" rx="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 20h8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 16v4" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 8h4" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 12h2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Equipos
+        </button>
+        <button class="nav-link" id="nav-categorias" onclick="showAdmin('categorias')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Categorías
+        </button>
+        <button class="nav-link" id="nav-tokens" onclick="showAdmin('tokens')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          API Tokens
+        </button>
+      </div>
+
+      <div class="nav-spacer"></div>
+      <button class="nav-link" onclick="logout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Pechar sesión
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="avatar" id="sidebar-avatar" style="background:#1e3a5f">MT</div>
+      <div>
+        <div class="user-name" id="sidebar-name">Martín Torres</div>
+        <div class="user-role" id="sidebar-role">Técnico de mantemento</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main" style="margin-top:37px">
+
+    <!-- ── VIEW: ISSUES LIST ── -->
+    <div id="view-issues">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total incidencias</div>
+          <div class="stat-value">47</div>
+          <div class="stat-sub">Este mes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Abertas</div>
+          <div class="stat-value" style="color:#dc2626">5</div>
+          <div class="stat-sub">Requiren atención</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pechadas</div>
+          <div class="stat-value" style="color:#16a34a">42</div>
+          <div class="stat-sub">Este mes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tempo medio</div>
+          <div class="stat-value">2.4h</div>
+          <div class="stat-sub">Resolución</div>
+        </div>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Rexistro de incidencias</h1>
+          <p class="page-subtitle" id="issues-subtitle">Mantemento técnico e estado das liñas de produción</p>
+        </div>
+        <button class="btn btn-primary" onclick="showView('new-issue')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+          Nova incidencia
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Estado</th>
+                <th>Inicio</th>
+                <th>Equipo</th>
+                <th>Categoría</th>
+                <th>Tipo</th>
+                <th id="th-technicians">Técnicos</th>
+                <th>Accións</th>
+              </tr>
+            </thead>
+            <tbody id="issues-tbody">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: ISSUE DETAIL ── -->
+    <div id="view-issue-detail" style="display:none">
+      <button class="back-link" onclick="showView('issues')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Volver ás incidencias
+      </button>
+
+      <div class="issue-header">
+        <div class="issue-title-block">
+          <h1>INC-2026-047 — Compresor C-02</h1>
+          <div class="issue-meta">
+            <span class="badge badge-open">Aberta</span>
+            <span class="badge badge-correctivo">Correctivo</span>
+            <span style="font-size:0.78rem;color:#9ca3af">Aberta o 02/06/2026 ás 08:14</span>
+          </div>
+        </div>
+        <div class="issue-actions" id="detail-actions">
+          <!-- Rendered by JS based on role -->
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="section-title">Datos da incidencia</div>
+          <div class="detail-list">
+            <div class="detail-item"><label>Equipo</label><div class="value">Compresor C-02</div></div>
+            <div class="detail-item"><label>Categoría</label><div class="value">Avería mecánica</div></div>
+            <div class="detail-item"><label>Tipo</label><div class="value">Correctivo</div></div>
+            <div class="detail-item"><label>Data de inicio</label><div class="value">02/06/2026 08:14</div></div>
+            <div class="detail-item"><label>Data de fin</label><div class="value" style="color:#9ca3af">—</div></div>
+            <div class="detail-item"><label>Técnicos asignados</label><div class="value" style="color:#9ca3af">Sen asignar</div></div>
+            <div class="detail-item">
+              <label>Reportado por</label>
+              <div class="value">Ana López <span class="badge role-user" style="font-size:0.68rem;padding:1px 6px;margin-left:4px">Traballadora</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Observacións</div>
+          <div class="obs-section">
+            <div class="obs-list">
+              <div class="obs-item">
+                <div class="obs-avatar" style="background:#6b7280">AL</div>
+                <div class="obs-bubble">
+                  <div class="obs-meta">
+                    <span class="obs-author">Ana López</span>
+                    <span class="badge role-user obs-role">Traballadora</span>
+                    <span class="obs-date">02/06 08:14</span>
+                  </div>
+                  <div class="obs-content">O compresor C-02 está facendo un ruído moi raro dende esta mañá. Parece que vén da parte inferior. Non se ve ningunha fuga visible.</div>
+                </div>
+              </div>
+              <div class="obs-item">
+                <div class="obs-avatar" style="background:#1e3a5f">MT</div>
+                <div class="obs-bubble" style="background:#eff6ff;border-color:#bfdbfe">
+                  <div class="obs-meta">
+                    <span class="obs-author">Martín Torres</span>
+                    <span class="badge role-technician obs-role">Técnico</span>
+                    <span class="obs-date">02/06 09:02</span>
+                  </div>
+                  <div class="obs-content">Revisado in situ. O ruído provén do rodamento inferior. Hai que pedir peza de recambio. Mentres tanto o compresor pode seguir operando a carga reducida.</div>
+                </div>
+              </div>
+              <div class="obs-item">
+                <div class="obs-avatar" style="background:#6b7280">AL</div>
+                <div class="obs-bubble">
+                  <div class="obs-meta">
+                    <span class="obs-author">Ana López</span>
+                    <span class="badge role-user obs-role">Traballadora</span>
+                    <span class="obs-date">02/06 11:30</span>
+                  </div>
+                  <div class="obs-content">O ruído foi a máis. Creo que deberíamos parar o equipo.</div>
+                </div>
+              </div>
+            </div>
+            <div class="obs-input-area">
+              <textarea placeholder="Engade unha observación..."></textarea>
+              <button class="btn btn-primary btn-sm" style="align-self:flex-end" onclick="alert('Observación engadida')">Enviar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: NEW ISSUE ── -->
+    <div id="view-new-issue" style="display:none">
+      <button class="back-link" onclick="showView('issues')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Volver ás incidencias
+      </button>
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Nova incidencia</h1>
+          <p class="page-subtitle">Rexistra un novo problema de mantemento</p>
+        </div>
+      </div>
+      <div class="card form-card">
+        <div class="section-title">Información básica</div>
+        <div class="form-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Equipo afectado</label>
+              <select>
+                <option>Selecciona un equipo...</option>
+                <option>Arranque</option><option>Básculas</option><option>Calibradora</option>
+                <option>Cámara frixorífica 1</option><option>Cámara frixorífica 2</option>
+                <option>Carretilla 1</option><option>Carretilla 2</option><option>Carretilla 3</option>
+                <option selected>Compresor C-02</option><option>Dosificador Cloro</option>
+                <option>Colector L1-L5</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Categoría</label>
+              <select>
+                <option>Selecciona categoría...</option>
+                <option selected>Avería mecánica</option><option>Fallo eléctrico</option>
+                <option>Temperatura</option><option>Calibración</option>
+                <option>Limpeza</option><option>Outro</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tipo</label>
+              <select><option selected>Correctivo</option><option>Preventivo</option></select>
+            </div>
+            <div class="form-group">
+              <label>Data e hora de inicio</label>
+              <input type="datetime-local" value="2026-06-02T08:14">
+            </div>
+          </div>
+
+          <!-- Técnicos: só para técnico e admin -->
+          <div id="new-technicians-section">
+            <hr class="divider">
+            <div style="font-size:0.72rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:14px">Persoal técnico</div>
+            <div class="form-group">
+              <label>Técnicos asignados</label>
+              <div class="checkbox-group">
+                <label class="checkbox-item"><input type="checkbox"> Iván Rodríguez</label>
+                <label class="checkbox-item"><input type="checkbox" checked> Martín Torres</label>
+                <label class="checkbox-item"><input type="checkbox"> José Cancelo</label>
+                <label class="checkbox-item"><input type="checkbox"> José Simón</label>
+                <label class="checkbox-item"><input type="checkbox"> Sergio Pardo</label>
+              </div>
+            </div>
+          </div>
+
+          <hr class="divider">
+          <div style="font-size:0.72rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:14px">Observación inicial</div>
+          <div class="form-group">
+            <label>Observación (opcional)</label>
+            <textarea rows="3" placeholder="Describe o problema detectado...">O compresor C-02 está facendo un ruído moi raro dende esta mañá. Parece que vén da parte inferior.</textarea>
+          </div>
+        </div>
+        <div class="form-footer">
+          <button class="btn btn-secondary" onclick="showView('issues')">Cancelar</button>
+          <button class="btn btn-primary" onclick="showView('issue-detail')">Gardar incidencia</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: ADMIN ── -->
+    <div id="view-admin" style="display:none">
+
+      <!-- Tabs sticky só en móbil -->
+      <div class="admin-tabs-mobile">
+        <button class="tab active" onclick="showAdmin('usuarios');mobileTabActive(this)">Usuarios</button>
+        <button class="tab" onclick="showAdmin('equipos');mobileTabActive(this)">Equipos</button>
+        <button class="tab" onclick="showAdmin('categorias');mobileTabActive(this)">Categorías</button>
+        <button class="tab" onclick="showAdmin('tokens');mobileTabActive(this)">Tokens</button>
+      </div>
+
+      <!-- SECCIÓN: USUARIOS -->
+      <div id="admin-usuarios">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Usuarios</h1>
+            <p class="page-subtitle">Xestión de contas e roles de acceso</p>
+          </div>
+          <button class="btn btn-primary" onclick="alert('Formulario de novo usuario')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+            Novo usuario
+          </button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Usuario</th><th>Rol</th><th>Estado</th><th>Último acceso</th><th>Accións</th></tr></thead>
+              <tbody>
+                <tr><td><div class="user-cell"><div class="avatar" style="background:#7c3aed">SO</div><div><div class="name">Sergi Orrantia</div><div class="email">sorrantia@kiwiatlantico.com</div></div></div></td><td><span class="badge role-admin">Administrador</span></td><td><span class="status-dot active">Activo</span></td><td style="font-size:0.78rem;color:#6b7280">Hoxe 09:45</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td><div class="user-cell"><div class="avatar" style="background:#1e3a5f">MT</div><div><div class="name">Martín Torres</div><div class="email">mtorres@kiwiatlantico.com</div></div></div></td><td><span class="badge role-technician">Técnico</span></td><td><span class="status-dot active">Activo</span></td><td style="font-size:0.78rem;color:#6b7280">Hoxe 08:14</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td><div class="user-cell"><div class="avatar" style="background:#1e3a5f">IR</div><div><div class="name">Iván Rodríguez</div><div class="email">irodriguez@kiwiatlantico.com</div></div></div></td><td><span class="badge role-technician">Técnico</span></td><td><span class="status-dot active">Activo</span></td><td style="font-size:0.78rem;color:#6b7280">Onte 17:30</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td><div class="user-cell"><div class="avatar" style="background:#6b7280">AL</div><div><div class="name">Ana López</div><div class="email">alopez@kiwiatlantico.com</div></div></div></td><td><span class="badge role-user">Traballadora</span></td><td><span class="status-dot active">Activo</span></td><td style="font-size:0.78rem;color:#6b7280">Hoxe 08:10</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td><div class="user-cell"><div class="avatar" style="background:#6b7280">JC</div><div><div class="name">José Cancelo</div><div class="email">jcancelo@kiwiatlantico.com</div></div></div></td><td><span class="badge role-technician">Técnico</span></td><td><span class="status-dot active">Activo</span></td><td style="font-size:0.78rem;color:#6b7280">Hoxe 07:55</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td><div class="user-cell"><div class="avatar" style="background:#6b7280">SP</div><div><div class="name">Sergio Pardo</div><div class="email">spardo@kiwiatlantico.com</div></div></div></td><td><span class="badge role-technician">Técnico</span></td><td><span class="status-dot active">Activo</span></td><td style="font-size:0.78rem;color:#6b7280">Onte 16:20</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td><div class="user-cell"><div class="avatar" style="background:#6b7280">CP</div><div><div class="name">Carlos Pérez</div><div class="email">cperez@kiwiatlantico.com</div></div></div></td><td><span class="badge role-user">Traballador</span></td><td><span class="status-dot inactive">Inactivo</span></td><td style="font-size:0.78rem;color:#6b7280">15/03/2026</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN: EQUIPOS -->
+      <div id="admin-equipos" style="display:none">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Equipos</h1>
+            <p class="page-subtitle">Catálogo de maquinaria e instalacións da planta</p>
+          </div>
+          <button class="btn btn-primary" onclick="alert('Formulario de novo equipo')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+            Novo equipo
+          </button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nome</th><th>Incidencias abertas</th><th>Total incidencias</th><th>Última incidencia</th><th>Accións</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:600">Compresor C-02</td><td><span class="badge badge-open">1 aberta</span></td><td style="color:#6b7280">8</td><td style="font-size:0.78rem;color:#6b7280">02/06/2026</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td style="font-weight:600">Cámara frixorífica 1</td><td><span class="badge badge-open">1 aberta</span></td><td style="color:#6b7280">5</td><td style="font-size:0.78rem;color:#6b7280">01/06/2026</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td style="font-weight:600">Carretilla 3</td><td><span class="badge badge-open">1 aberta</span></td><td style="color:#6b7280">3</td><td style="font-size:0.78rem;color:#6b7280">01/06/2026</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td style="font-weight:600">Básculas L2</td><td><span class="badge badge-closed">Sen abertas</span></td><td style="color:#6b7280">6</td><td style="font-size:0.78rem;color:#6b7280">28/05/2026</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td style="font-weight:600">Colector L1-L5</td><td><span class="badge badge-closed">Sen abertas</span></td><td style="color:#6b7280">4</td><td style="font-size:0.78rem;color:#6b7280">27/05/2026</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td style="font-weight:600">Dosificador Cloro</td><td><span class="badge badge-closed">Sen abertas</span></td><td style="color:#6b7280">7</td><td style="font-size:0.78rem;color:#6b7280">25/05/2026</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td style="font-weight:600">Calibradora</td><td><span class="badge badge-closed">Sen abertas</span></td><td style="color:#6b7280">2</td><td style="font-size:0.78rem;color:#6b7280">10/05/2026</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td style="font-weight:600">Cámara frixorífica 2</td><td><span class="badge badge-closed">Sen abertas</span></td><td style="color:#6b7280">1</td><td style="font-size:0.78rem;color:#6b7280">02/04/2026</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td style="font-weight:600">Arranque</td><td><span class="badge badge-closed">Sen abertas</span></td><td style="color:#6b7280">0</td><td style="font-size:0.78rem;color:#6b7280">—</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN: CATEGORÍAS -->
+      <div id="admin-categorias" style="display:none">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Categorías</h1>
+            <p class="page-subtitle">Tipos de incidencia para clasificación e filtrado</p>
+          </div>
+          <button class="btn btn-primary" onclick="alert('Formulario de nova categoría')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+            Nova categoría
+          </button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nome</th><th>Incidencias totais</th><th>Última vez usada</th><th>Accións</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:600">Avería mecánica</td><td style="color:#6b7280">18</td><td style="font-size:0.78rem;color:#6b7280">02/06/2026</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td style="font-weight:600">Fallo eléctrico</td><td style="color:#6b7280">9</td><td style="font-size:0.78rem;color:#6b7280">01/06/2026</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td style="font-weight:600">Temperatura</td><td style="color:#6b7280">7</td><td style="font-size:0.78rem;color:#6b7280">01/06/2026</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td style="font-weight:600">Calibración</td><td style="color:#6b7280">6</td><td style="font-size:0.78rem;color:#6b7280">28/05/2026</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td style="font-weight:600">Limpeza</td><td style="color:#6b7280">5</td><td style="font-size:0.78rem;color:#6b7280">27/05/2026</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+                <tr><td style="font-weight:600">Outro</td><td style="color:#6b7280">2</td><td style="font-size:0.78rem;color:#6b7280">15/04/2026</td><td><button class="btn btn-secondary btn-sm">Editar</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN: API TOKENS -->
+      <div id="admin-tokens" style="display:none">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">API Tokens</h1>
+            <p class="page-subtitle">Tokens de acceso para integracións externas</p>
+          </div>
+          <button class="btn btn-primary" onclick="alert('Xerar novo token')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+            Novo token
+          </button>
+        </div>
+        <div class="card">
+          <div style="padding:20px">
+            <div class="token-card">
+              <div class="token-header">
+                <div class="token-name">App móbil (reserva)</div>
+                <span class="badge" style="background:#f3f4f6;color:#9ca3af">Inactivo</span>
+              </div>
+              <div class="token-value">
+                <span>manka_tk_z9y8x7w6v5u4t3s2r1q0p9o8n7m6l5k4j3i2h1g0...</span>
+                <button class="btn btn-secondary btn-sm" onclick="alert('Copiado!')">Copiar</button>
+              </div>
+              <div class="token-meta">
+                <span>Creado: 15/04/2026</span>
+                <span>Expirou: 15/05/2026</span>
+                <span>Sen uso</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /screen-app -->
+
+<script>
+// ── ROLE CONFIG ──
+const ROLES = {
+  user: {
+    name: 'Ana López',
+    role: 'Traballadora de planta',
+    roleLabel: 'Traballador de planta',
+    avatarBg: '#6b7280',
+    avatarInitials: 'AL',
+    badgeClass: 'role-user',
+    badgeText: 'Traballadora',
+  },
+  technician: {
+    name: 'Martín Torres',
+    role: 'Técnico de mantemento',
+    roleLabel: 'Técnico de mantemento',
+    avatarBg: '#1e3a5f',
+    avatarInitials: 'MT',
+    badgeClass: 'role-technician',
+    badgeText: 'Técnico',
+  },
+  admin: {
+    name: 'Sergi Orrantia',
+    role: 'Administrador',
+    roleLabel: 'Administrador',
+    avatarBg: '#7c3aed',
+    avatarInitials: 'SO',
+    badgeClass: 'role-admin',
+    badgeText: 'Administrador',
+  }
+};
+
+// Issues data
+const ALL_ISSUES = [
+  { status:'open',   date:'02/06/2026 08:14', device:'Compresor C-02',      category:'Avería mecánica', type:'correctivo', tech:'—',                   mine: true  },
+  { status:'open',   date:'01/06/2026 14:32', device:'Carretilla 3',         category:'Fallo eléctrico', type:'correctivo', tech:'Iván R.',               mine: false },
+  { status:'open',   date:'01/06/2026 09:05', device:'Cámara frixorífica 1', category:'Temperatura',     type:'correctivo', tech:'Martín T., Sergio P.',  mine: false },
+  { status:'closed', date:'28/05/2026 07:45', device:'Básculas L2',          category:'Calibración',     type:'preventivo', tech:'José C.',               mine: false },
+  { status:'closed', date:'27/05/2026 11:20', device:'Colector L1-L3',       category:'Limpeza',         type:'preventivo', tech:'Martín T.',              mine: true  },
+  { status:'closed', date:'25/05/2026 15:10', device:'Dosificador Cloro',    category:'Avería mecánica', type:'correctivo', tech:'Iván R., José S.',       mine: false },
+];
+
+let currentRole = null;
+
+function showRoleStep() {
+  document.getElementById('login-step1').style.display = 'none';
+  document.getElementById('login-step2').style.display = 'block';
+}
+
+function backToLogin() {
+  document.getElementById('login-step2').style.display = 'none';
+  document.getElementById('login-step1').style.display = 'block';
+}
+
+function login(role) {
+  currentRole = role;
+  const cfg = ROLES[role];
+
+  // Role bar
+  document.getElementById('role-bar-label').textContent = cfg.roleLabel;
+
+  // Sidebar user info
+  const av = document.getElementById('sidebar-avatar');
+  av.textContent = cfg.avatarInitials;
+  av.style.background = cfg.avatarBg;
+  document.getElementById('sidebar-name').textContent = cfg.name;
+  document.getElementById('sidebar-role').textContent = cfg.role;
+
+  // Admin nav
+  document.getElementById('nav-admin-section').style.display = role === 'admin' ? 'block' : 'none';
+
+  // Switch screens
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('screen-app').classList.add('active');
+
+  showView('issues');
+}
+
+function logout() {
+  currentRole = null;
+  document.getElementById('login-step1').style.display = 'block';
+  document.getElementById('login-step2').style.display = 'none';
+  document.getElementById('screen-app').classList.remove('active');
+  document.getElementById('screen-login').classList.add('active');
+}
+
+function showView(view) {
+  // Hide all views
+  ['issues','issue-detail','new-issue','admin'].forEach(v => {
+    document.getElementById('view-' + v).style.display = 'none';
+  });
+
+  // Update nav active state
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+  if (view === 'issues') {
+    document.getElementById('view-issues').style.display = 'block';
+    document.getElementById('nav-issues').classList.add('active');
+    ['nav-usuarios','nav-equipos','nav-categorias','nav-tokens'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('active');
+    });
+    renderIssues();
+  } else if (view === 'issue-detail') {
+    document.getElementById('view-issue-detail').style.display = 'block';
+    document.getElementById('nav-issues').classList.add('active');
+    renderDetailActions();
+  } else if (view === 'new-issue') {
+    document.getElementById('view-new-issue').style.display = 'block';
+    document.getElementById('nav-issues').classList.add('active');
+    renderNewIssueForm();
+  } else if (view === 'admin') {
+    document.getElementById('view-admin').style.display = 'block';
+    showAdmin('usuarios');
+  }
+}
+
+function renderIssues() {
+  const role = currentRole;
+  const isUser = role === 'user';
+  const tbody = document.getElementById('issues-tbody');
+
+  // Subtitle
+  document.getElementById('issues-subtitle').textContent = isUser
+    ? 'As túas incidencias abertas e o historial das que reportaches'
+    : 'Mantemento técnico e estado das liñas de produción';
+
+  // Filter for user role
+  const issues = isUser ? ALL_ISSUES.filter(i => i.mine) : ALL_ISSUES;
+
+  tbody.innerHTML = issues.map(issue => {
+    const isClosed = issue.status === 'closed';
+    const statusBadge = isClosed
+      ? '<span class="badge badge-closed">Pechada</span>'
+      : '<span class="badge badge-open">Aberta</span>';
+    const typeBadge = issue.type === 'preventivo'
+      ? '<span class="badge badge-preventivo">Preventivo</span>'
+      : '<span class="badge badge-correctivo">Correctivo</span>';
+
+    return `<tr style="${isClosed ? 'opacity:0.7' : ''}">
+      <td>${statusBadge}</td>
+      <td style="font-family:monospace;font-size:0.78rem;color:#6b7280">${issue.date}</td>
+      <td style="font-weight:600">${issue.device}</td>
+      <td>${issue.category}</td>
+      <td>${typeBadge}</td>
+      <td style="color:#6b7280">${issue.tech}</td>
+      <td><button class="btn btn-secondary btn-sm" onclick="showView('issue-detail')">Ver</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderDetailActions() {
+  const role = currentRole;
+  const el = document.getElementById('detail-actions');
+
+  if (role === 'user') {
+    // Traballador: só pode pechar a súa propia (non editar campos técnicos)
+    el.innerHTML = `<button class="btn btn-success" onclick="alert('Incidencia pechada')">Pechar incidencia</button>`;
+  } else if (role === 'technician') {
+    el.innerHTML = `
+      <button class="btn btn-secondary" onclick="showView('new-issue')">Editar</button>
+      <button class="btn btn-primary" onclick="alert('Incidencia pechada')">Pechar incidencia</button>`;
+  } else {
+    el.innerHTML = `
+      <button class="btn btn-secondary" onclick="showView('new-issue')">Editar</button>
+      <button class="btn btn-danger btn-sm" onclick="alert('Incidencia eliminada')">Eliminar</button>
+      <button class="btn btn-primary" onclick="alert('Incidencia pechada')">Pechar incidencia</button>`;
+  }
+}
+
+function renderNewIssueForm() {
+  const role = currentRole;
+  const techSection = document.getElementById('new-technicians-section');
+  // Traballador non pode asignar técnicos
+  techSection.style.display = role === 'user' ? 'none' : 'block';
+}
+
+function showAdmin(section) {
+  // Asegurarse de que o view-admin está visible
+  ['issues','issue-detail','new-issue','admin'].forEach(v => {
+    document.getElementById('view-' + v).style.display = 'none';
+  });
+  document.getElementById('view-admin').style.display = 'block';
+  document.getElementById('nav-issues').classList.remove('active');
+
+  // Ocultar todas as seccións admin
+  ['usuarios','equipos','categorias','tokens'].forEach(s => {
+    document.getElementById('admin-' + s).style.display = 'none';
+  });
+  // Mostrar a sección seleccionada
+  document.getElementById('admin-' + section).style.display = 'block';
+
+  // Actualizar estado activo no sidebar
+  ['nav-usuarios','nav-equipos','nav-categorias','nav-tokens'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+  const navEl = document.getElementById('nav-' + section);
+  if (navEl) navEl.classList.add('active');
+}
+
+function mobileTabActive(btn) {
+  btn.closest('.admin-tabs-mobile').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function switchTab(btn) {
+  btn.parentNode.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('app-sidebar');
+  const overlay = document.querySelector('.sidebar-overlay');
+  const toggle = document.querySelector('.mobile-menu-toggle');
+  if (!sidebar || !overlay) return;
+  const isOpen = sidebar.classList.toggle('mobile-open');
+  overlay.classList.toggle('active', isOpen);
+  document.body.classList.toggle('sidebar-open', isOpen);
+  if (toggle) toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+
+function closeSidebar() {
+  const sidebar = document.getElementById('app-sidebar');
+  const overlay = document.querySelector('.sidebar-overlay');
+  const toggle = document.querySelector('.mobile-menu-toggle');
+  if (!sidebar || !overlay) return;
+  sidebar.classList.remove('mobile-open');
+  overlay.classList.remove('active');
+  document.body.classList.remove('sidebar-open');
+  if (toggle) toggle.setAttribute('aria-expanded', 'false');
+}
+
+document.addEventListener('click', function(event) {
+  if (window.innerWidth > 1024) return;
+  const navLink = event.target.closest('.sidebar .nav-link');
+  if (navLink) closeSidebar();
+});
+
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') closeSidebar();
+});
+
+window.addEventListener('resize', function() {
+  if (window.innerWidth > 1024) closeSidebar();
+});
+
+</script>
+</body>
+</html>

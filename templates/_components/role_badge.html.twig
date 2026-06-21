@@ -1,0 +1,11 @@
+{#
+    Badge de rol para un usuario.
+    Uso: {{ include('_components/role_badge.html.twig', {user: issue.createdBy}) }}
+#}
+{% if 'ROLE_ADMIN' in user.roles %}
+    <span class="inline-flex items-center rounded-md bg-purple-50 px-2 py-0.5 text-[0.68rem] font-semibold text-purple-700">Administrador</span>
+{% elseif 'ROLE_TECHNICIAN' in user.roles %}
+    <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-0.5 text-[0.68rem] font-semibold text-green-700">Técnico</span>
+{% else %}
+    <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-[0.68rem] font-semibold text-blue-700">Traballador</span>
+{% endif %}

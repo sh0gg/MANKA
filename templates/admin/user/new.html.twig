@@ -1,0 +1,16 @@
+{% extends 'app/base.html.twig' %}
+
+{% block title %}Novo usuario — MANKA{% endblock %}
+
+{% block content %}
+    <a href="{{ path('app_admin_user_index') }}" class="mb-4.5 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-900">
+        <svg class="size-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Volver a usuarios
+    </a>
+    <h1 class="mb-0.5 text-[1.3rem] font-bold text-gray-900">Novo usuario</h1>
+    <p class="mb-5 text-sm text-gray-500">O usuario poderá acceder con estas credenciais</p>
+
+    <div class="max-w-xl rounded-xl border border-gray-200 bg-white px-5 py-5">
+        {{ include('admin/user/_form.html.twig', {form: form, button_label: 'Crear usuario'}) }}
+    </div>
+{% endblock %}

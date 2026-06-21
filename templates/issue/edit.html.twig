@@ -1,13 +1,20 @@
-{% extends 'base.html.twig' %}
+{% extends 'app/base.html.twig' %}
 
-{% block title %}Edit Issue{% endblock %}
+{% block title %}Editar incidencia — MANKA{% endblock %}
 
-{% block body %}
-    <h1>Edit Issue</h1>
+{% block content %}
+    <a href="{{ path('app_issue_show', {id: issue.id}) }}" class="mb-4.5 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-900">
+        <svg class="size-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Volver á incidencia
+    </a>
 
-    {{ include('issue/_form.html.twig', {'button_label': 'Actualizar'}) }}
+    <h1 class="mb-0.5 text-[1.3rem] font-bold text-gray-900">Editar incidencia</h1>
+    <p class="mb-5 text-sm text-gray-500">INC-{{ issue.id }} — {{ issue.device.name }}</p>
 
-    <a href="{{ path('app_issue_index') }}">back to list</a>
-
-    {{ include('issue/_delete_form.html.twig') }}
+    <div class="max-w-2xl rounded-xl border border-gray-200 bg-white">
+        <div class="border-b border-gray-100 px-5 py-3 text-[0.72rem] font-bold tracking-wide text-gray-500 uppercase">Información básica</div>
+        <div class="px-5 py-5">
+            {{ include('issue/_form.html.twig', {form: form, button_label: 'Gardar cambios'}) }}
+        </div>
+    </div>
 {% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'app/base.html.twig' %}
+
+{% block title %}Usuarios — MANKA{% endblock %}
+
+{% block content %}
+    <div class="mb-6 flex items-start justify-between gap-3">
+        <div>
+            <h1 class="text-[1.3rem] font-bold text-gray-900">Usuarios</h1>
+            <p class="mt-0.5 text-sm text-gray-500">Xestión de contas e roles de acceso</p>
+        </div>
+        <a href="{{ path('app_admin_user_new') }}"
+           class="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover">
+            <svg class="size-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+            Novo usuario
+        </a>
+    </div>
+
+    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="border-b border-gray-200 bg-gray-50">
+                <tr>
+                    <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Usuario</th>
+                    <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Rol</th>
+                    <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Estado</th>
+                    <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Último acceso</th>
+                    <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Accións</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                    <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-2.5">
+                                {{ include('_components/avatar.html.twig', {user: user, size: 32}) }}
+                                <div>
+                                    <div class="text-[0.85rem] font-semibold text-gray-900">{{ user.fullName }}</div>
+                                    <div class="text-[0.72rem] text-gray-500">{{ user.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3">{{ include('_components/role_badge.html.twig', {user: user}) }}</td>
+                        <td class="px-4 py-3">
+                            {% if user.active %}
+                                <span class="inline-flex items-center gap-1.5 text-[0.78rem] text-gray-700"><span class="size-1.5 rounded-full bg-green-600"></span> Activo</span>
+                            {% else %}
+                                <span class="inline-flex items-center gap-1.5 text-[0.78rem] text-gray-400"><span class="size-1.5 rounded-full bg-gray-400"></span> Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-[0.78rem] text-gray-500">{{ user.lastLoginAt ? user.lastLoginAt|date('d/m/Y H:i') : '—' }}</td>
+                        <td class="px-4 py-3">
+                            <a href="{{ path('app_admin_user_edit', {id: user.id}) }}" class="inline-flex items-center rounded-lg border border-gray-300 px-2.5 py-1 text-[0.78rem] font-semibold text-gray-700 transition hover:bg-gray-50">Editar</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

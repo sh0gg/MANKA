@@ -1,1 +1,17 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+
+@theme {
+    --font-sans: 'DM Sans', system-ui, sans-serif;
+
+    --color-brand: #1e3a5f;
+    --color-brand-light: #2e5fa3;
+    --color-brand-hover: #162d4a;
+    --color-accent: #e8f0f8;
+}
+
+@layer base {
+    body {
+        font-family: theme(--font-sans);
+    }
+}

@@ -1,0 +1,69 @@
+{# Tema de formularios con utilidades Tailwind v4. O bundle symfonycasts/tailwind-bundle
+   só compila CSS: non inclúe tema de formularios, así que definimos o noso propio,
+   reutilizando os bloques do tema por defecto onde non necesitamos cambialos. #}
+{% use 'form_div_layout.html.twig' %}
+
+{% block form_row %}
+    <div class="mb-4.5">
+        {{ form_label(form) }}
+        {{ form_widget(form) }}
+        {{ form_help(form) }}
+        {{ form_errors(form) }}
+    </div>
+{% endblock %}
+
+{% block form_label -%}
+    {% if label is not same as(false) %}
+        <label {% if label_attr %}{% with {attr: label_attr} %}{{ block('attributes') }}{% endwith %}{% endif %} class="mb-1.5 block text-sm font-medium text-gray-700">
+            {{ translation_domain is same as(false) ? label : label|trans(label_translation_parameters, translation_domain) }}
+        </label>
+    {% endif %}
+{%- endblock %}
+
+{% block form_help -%}
+    {% if help is not empty %}
+        <p class="mt-1 text-[0.78rem] text-gray-400">{{ help|trans(help_translation_parameters, translation_domain) }}</p>
+    {% endif %}
+{%- endblock %}
+
+{% block form_errors -%}
+    {% if errors|length > 0 %}
+        <ul class="mt-1.5 flex flex-col gap-0.5">
+            {% for error in errors %}
+                <li class="text-[0.8rem] text-red-600">{{ error.message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{%- endblock %}
+
+{% block form_widget_simple -%}
+    {% set attr = attr|merge({class: (attr.class|default('') ~ ' w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 outline-none transition focus:border-brand-light focus:ring-3 focus:ring-brand-light/15')|trim}) %}
+    {{- parent() -}}
+{%- endblock %}
+
+{% block textarea_widget -%}
+    {% set attr = attr|merge({class: (attr.class|default('') ~ ' w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 outline-none transition focus:border-brand-light focus:ring-3 focus:ring-brand-light/15')|trim}) %}
+    {{- parent() -}}
+{%- endblock %}
+
+{% block choice_widget_expanded -%}
+    <div class="flex flex-wrap gap-1.5">
+        {%- for child in form %}
+            {{- form_widget(child) -}}
+        {% endfor -%}
+    </div>
+{%- endblock %}
+
+{% block checkbox_widget -%}
+    <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 transition hover:bg-gray-50 has-checked:border-brand-light has-checked:bg-accent has-checked:text-brand">
+        <input type="checkbox" {{ block('widget_attributes') }} {% if value is defined %}value="{{ value }}"{% endif %} {% if checked %}checked="checked"{% endif %} class="accent-brand">
+        {{ label|default('') }}
+    </label>
+{%- endblock %}
+
+{% block radio_widget -%}
+    <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 has-checked:border-brand-light has-checked:bg-accent has-checked:text-brand">
+        <input type="radio" {{ block('widget_attributes') }} {% if value is defined %}value="{{ value }}"{% endif %} {% if checked %}checked="checked"{% endif %} class="accent-brand">
+        {{ label|default('') }}
+    </label>
+{%- endblock %}

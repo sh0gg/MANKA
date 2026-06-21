@@ -1,0 +1,9 @@
+{#
+    Avatar circular con iniciais, coloreado segundo o rol do usuario.
+    Uso: {{ include('_components/avatar.html.twig', {user: observation.author, size: 30}) }}
+#}
+{% set bg = 'ROLE_ADMIN' in user.roles ? 'bg-purple-600' : ('ROLE_TECHNICIAN' in user.roles ? 'bg-brand' : 'bg-gray-500') %}
+<div class="flex shrink-0 items-center justify-center rounded-full {{ bg }} text-white font-bold"
+     style="width: {{ size|default(32) }}px; height: {{ size|default(32) }}px; font-size: {{ (size|default(32) * 0.34) }}px;">
+    {{ user.initials }}
+</div>

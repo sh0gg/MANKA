@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use App\Enum\IssueStatus;
+use App\Enum\IssueType;
 use App\Repository\IssueRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -16,10 +18,16 @@ class Issue
     private ?int $id = null;
 
     #[ORM\Column]
-    private ?\DateTime $startAt = null;
+    private ?\DateTimeImmutable $startAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTime $endAt = null;
+    private ?\DateTimeImmutable $endAt = null;
+
+    #[ORM\Column(length: 20, enumType: IssueType::class)]
+    private ?IssueType $type = null;
+
+    #[ORM\Column(length: 20, enumType: IssueStatus::class)]
+    private IssueStatus $status = IssueStatus::OPEN;
 
     #[ORM\ManyToOne(inversedBy: 'issues')]
     #[ORM\JoinColumn(nullable: false)]
@@ -30,20 +38,29 @@ class Issue
     private ?Device $device = null;
 
     /**
-     * @var Collection<int, Technician>
+     * Técnicos asignados á incidencia.
+     *
+     * @var Collection<int, User>
      */
-    #[ORM\ManyToMany(targetEntity: Technician::class, inversedBy: 'issues')]
-    private Collection $technician;
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'assignedIssues')]
+    #[ORM\JoinTable(name: 'issue_technician')]
+    private Collection $technicians;
 
-    #[ORM\Column]
-    private ?bool $hygiene = null;
+    #[ORM\ManyToOne(inversedBy: 'createdIssues')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $createdBy = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $comments = null;
+    /**
+     * @var Collection<int, Observation>
+     */
+    #[ORM\OneToMany(targetEntity: Observation::class, mappedBy: 'issue', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['createdAt' => 'ASC'])]
+    private Collection $observations;
 
     public function __construct()
     {
-        $this->technician = new ArrayCollection();
+        $this->technicians = new ArrayCollection();
+        $this->observations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -51,25 +68,65 @@ class Issue
         return $this->id;
     }
 
-    public function getStartAt(): ?\DateTime
+    public function getStartAt(): ?\DateTimeImmutable
     {
         return $this->startAt;
     }
 
-    public function setStartAt(\DateTime $startAt): static
+    public function setStartAt(\DateTimeImmutable $startAt): static
     {
         $this->startAt = $startAt;
 
         return $this;
     }
 
-    public function getEndAt(): ?\DateTime
+    public function getEndAt(): ?\DateTimeImmutable
     {
         return $this->endAt;
     }
 
-    public function setEndAt(?\DateTime $endAt): static
+    public function setEndAt(?\DateTimeImmutable $endAt): static
     {
+        $this->endAt = $endAt;
+
+        return $this;
+    }
+
+    public function getType(): ?IssueType
+    {
+        return $this->type;
+    }
+
+    public function setType(IssueType $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getStatus(): IssueStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(IssueStatus $status): static
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function isOpen(): bool
+    {
+        return IssueStatus::OPEN === $this->status;
+    }
+
+    /**
+     * Pecha a incidencia, marcando a data de fin.
+     */
+    public function close(\DateTimeImmutable $endAt = new \DateTimeImmutable()): static
+    {
+        $this->status = IssueStatus::CLOSED;
         $this->endAt = $endAt;
 
         return $this;
@@ -100,49 +157,66 @@ class Issue
     }
 
     /**
-     * @return Collection<int, Technician>
+     * @return Collection<int, User>
      */
-    public function getTechnician(): Collection
+    public function getTechnicians(): Collection
     {
-        return $this->technician;
+        return $this->technicians;
     }
 
-    public function addTechnician(Technician $technician): static
+    public function addTechnician(User $technician): static
     {
-        if (!$this->technician->contains($technician)) {
-            $this->technician->add($technician);
+        if (!$this->technicians->contains($technician)) {
+            $this->technicians->add($technician);
         }
 
         return $this;
     }
 
-    public function removeTechnician(Technician $technician): static
+    public function removeTechnician(User $technician): static
     {
-        $this->technician->removeElement($technician);
+        $this->technicians->removeElement($technician);
 
         return $this;
     }
 
-    public function isHygiene(): ?bool
+    public function getCreatedBy(): ?User
     {
-        return $this->hygiene;
+        return $this->createdBy;
     }
 
-    public function setHygiene(bool $hygiene): static
+    public function setCreatedBy(?User $createdBy): static
     {
-        $this->hygiene = $hygiene;
+        $this->createdBy = $createdBy;
 
         return $this;
     }
 
-    public function getComments(): ?string
+    /**
+     * @return Collection<int, Observation>
+     */
+    public function getObservations(): Collection
     {
-        return $this->comments;
+        return $this->observations;
     }
 
-    public function setComments(?string $comments): static
+    public function addObservation(Observation $observation): static
     {
-        $this->comments = $comments;
+        if (!$this->observations->contains($observation)) {
+            $this->observations->add($observation);
+            $observation->setIssue($this);
+        }
+
+        return $this;
+    }
+
+    public function removeObservation(Observation $observation): static
+    {
+        if ($this->observations->removeElement($observation)) {
+            if ($observation->getIssue() === $this) {
+                $observation->setIssue(null);
+            }
+        }
 
         return $this;
     }

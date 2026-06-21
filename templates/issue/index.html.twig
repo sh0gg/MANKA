@@ -1,82 +1,97 @@
-{% extends 'base.html.twig' %}
+{% extends 'app/base.html.twig' %}
 
-{% block title %}Incidencias - KiwiAtlantico{% endblock %}
+{% block title %}Incidencias — MANKA{% endblock %}
 
-{% block body %}
-    <div class="px-4 sm:px-6 lg:px-8">
-        <div class="sm:flex sm:items-center">
-            <div class="sm:flex-auto">
-                <h1 class="text-xl font-semibold text-gray-900">Registro de Incidencias</h1>
-                <p class="mt-2 text-sm text-gray-700">Mantenimiento técnico y estado de líneas de producción.</p>
-            </div>
-            <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-                <a href="{{ path('app_issue_new') }}" class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 uppercase tracking-wider">
-                    Nueva incidencia
-                </a>
-            </div>
+{% block content %}
+    <div class="mb-6 grid grid-cols-2 gap-3.5 lg:grid-cols-4">
+        <div class="rounded-xl border border-gray-200 bg-white p-4.5">
+            <div class="mb-1.5 text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Total incidencias</div>
+            <div class="text-[1.7rem] font-bold text-gray-900">{{ stats.total }}</div>
+            <div class="mt-0.5 text-[0.72rem] text-gray-400">{{ is_privileged ? 'Todas as rexistradas' : 'As túas incidencias' }}</div>
         </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-4.5">
+            <div class="mb-1.5 text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Abertas</div>
+            <div class="text-[1.7rem] font-bold text-red-600">{{ stats.open }}</div>
+            <div class="mt-0.5 text-[0.72rem] text-gray-400">Requiren atención</div>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-4.5">
+            <div class="mb-1.5 text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Pechadas</div>
+            <div class="text-[1.7rem] font-bold text-green-600">{{ stats.closed }}</div>
+            <div class="mt-0.5 text-[0.72rem] text-gray-400">Resoltas</div>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-4.5">
+            <div class="mb-1.5 text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Tempo medio</div>
+            <div class="text-[1.7rem] font-bold text-gray-900">{{ stats.avg_resolution_hours is not null ? stats.avg_resolution_hours|round(1) ~ 'h' : '—' }}</div>
+            <div class="mt-0.5 text-[0.72rem] text-gray-400">Resolución</div>
+        </div>
+    </div>
 
-        <div class="mt-8 flow-root">
-            <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                    <div class="overflow-hidden shadow-sm ring-1 ring-black/5 sm:rounded-lg">
-                        <table class="min-w-full divide-y divide-gray-300">
-                            <thead class="bg-gray-50">
-                            <tr>
-                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Estado</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Inicio</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Equipo</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Categoría</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Operarios</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Comentarios</th>
-                                <th scope="col" class="relative py-3.5 pl-3 pr-4 text-right text-sm font-semibold text-gray-900 sm:pr-6">Acciones</th>
-                            </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 bg-white">
-                            {% for issue in issues %}
-                                <tr class="{{ issue.endAt is empty ? 'bg-indigo-50/30' : '' }} hover:bg-gray-50 transition-colors">
-                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                                        {% if issue.endAt is empty %}
-                                            <span class="inline-flex items-center gap-x-1.5 rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
-                                                <svg class="h-1.5 w-1.5 fill-red-500 animate-pulse" viewBox="0 0 6 6" aria-hidden="true"><circle cx="3" cy="3" r="3" /></svg>
-                                                Abierta
-                                            </span>
-                                        {% else %}
-                                            <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
-                                                Terminada
-                                            </span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono">
-                                        {{ issue.startAt ? issue.startAt|date('d/m/Y H:i') : '--' }}
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
-                                        {{ issue.device.name|default('N/A') }}
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                        {{ issue.category.name|default('N/A') }}
-                                    </td>
-                                    <td class="px-3 py-4 text-sm text-gray-500">
-                                        {{ issue.technician|join(', ') }}
-                                    </td>
-                                    <td class="px-3 py-4 text-sm text-gray-500 italic max-w-xs truncate">
-                                        {{ issue.comments }}
-                                    </td>
-                                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 space-x-3">
-                                        <a href="{{ path('app_issue_show', {'id': issue.id}) }}" class="text-indigo-600 hover:text-indigo-900">Ver</a>
-                                        <a href="{{ path('app_issue_edit', {'id': issue.id}) }}" class="text-indigo-600 hover:text-indigo-900">Editar</a>
-                                    </td>
-                                </tr>
+    <div class="mb-6 flex items-start justify-between gap-3">
+        <div>
+            <h1 class="text-[1.3rem] font-bold text-gray-900">Rexistro de incidencias</h1>
+            <p class="mt-0.5 text-sm text-gray-500">
+                {{ is_privileged ? 'Mantemento técnico e estado das liñas de produción' : 'As túas incidencias abertas e o historial das que reportaches' }}
+            </p>
+        </div>
+        <a href="{{ path('app_issue_new') }}"
+           class="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover">
+            <svg class="size-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+            Nova incidencia
+        </a>
+    </div>
+
+    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="border-b border-gray-200 bg-gray-50">
+                <tr>
+                    <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Estado</th>
+                    <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Inicio</th>
+                    <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Equipo</th>
+                    <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Categoría</th>
+                    <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Tipo</th>
+                    <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Técnicos</th>
+                    <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Accións</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for issue in issues %}
+                    <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50 {{ not issue.open ? 'opacity-70' }}">
+                        <td class="px-4 py-3.5">
+                            {% if issue.open %}
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-0.5 text-[0.72rem] font-semibold text-red-600">
+                                    <span class="size-1.5 animate-pulse rounded-full bg-red-500"></span>
+                                    Aberta
+                                </span>
                             {% else %}
-                                <tr>
-                                    <td colspan="7" class="py-10 text-center text-sm text-gray-500">No hay incidencias registradas</td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+                                <span class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-[0.72rem] font-semibold text-green-600">Pechada</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3.5 whitespace-nowrap font-mono text-[0.78rem] text-gray-500">{{ issue.startAt|date('d/m/Y H:i') }}</td>
+                        <td class="px-4 py-3.5 font-semibold text-gray-900">{{ issue.device.name }}</td>
+                        <td class="px-4 py-3.5 text-gray-700">{{ issue.category.name }}</td>
+                        <td class="px-4 py-3.5">
+                            {% if issue.type.value == 'preventivo' %}
+                                <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-[0.72rem] font-semibold text-blue-600">Preventivo</span>
+                            {% else %}
+                                <span class="inline-flex items-center rounded-full bg-orange-50 px-2.5 py-0.5 text-[0.72rem] font-semibold text-orange-600">Correctivo</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3.5 text-gray-500">
+                            {{ issue.technicians|length > 0 ? issue.technicians|map(t => t.fullName)|join(', ') : '—' }}
+                        </td>
+                        <td class="px-4 py-3.5">
+                            <a href="{{ path('app_issue_show', {id: issue.id}) }}"
+                               class="inline-flex items-center rounded-lg border border-gray-300 px-2.5 py-1 text-[0.78rem] font-semibold text-gray-700 transition hover:bg-gray-50">Ver</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-400">Non hai incidencias rexistradas.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 {% endblock %}

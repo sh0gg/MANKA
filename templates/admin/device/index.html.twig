@@ -1,0 +1,54 @@
+{% extends 'app/base.html.twig' %}
+
+{% block title %}Equipos — MANKA{% endblock %}
+
+{% block content %}
+    <div class="mb-6 flex items-start justify-between gap-3">
+        <div>
+            <h1 class="text-[1.3rem] font-bold text-gray-900">Equipos</h1>
+            <p class="mt-0.5 text-sm text-gray-500">Catálogo de maquinaria e instalacións da planta</p>
+        </div>
+        <a href="{{ path('app_admin_device_new') }}"
+           class="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover">
+            <svg class="size-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+            Novo equipo
+        </a>
+    </div>
+
+    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="border-b border-gray-200 bg-gray-50">
+                <tr>
+                    <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Nome</th>
+                    <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Incidencias abertas</th>
+                    <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Total incidencias</th>
+                    <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Última incidencia</th>
+                    <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Accións</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for device in devices %}
+                    <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                        <td class="px-4 py-3 font-semibold text-gray-900">{{ device.name }}</td>
+                        <td class="px-4 py-3">
+                            {% if stats[device.id].open > 0 %}
+                                <span class="inline-flex items-center rounded-full bg-red-50 px-2.5 py-0.5 text-[0.72rem] font-semibold text-red-600">{{ stats[device.id].open }} aberta{{ stats[device.id].open > 1 ? 's' }}</span>
+                            {% else %}
+                                <span class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-[0.72rem] font-semibold text-green-600">Sen abertas</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-gray-500">{{ stats[device.id].total }}</td>
+                        <td class="px-4 py-3 text-[0.78rem] text-gray-500">{{ stats[device.id].last ? stats[device.id].last|date('d/m/Y') : '—' }}</td>
+                        <td class="px-4 py-3">
+                            <a href="{{ path('app_admin_device_edit', {id: device.id}) }}" class="inline-flex items-center rounded-lg border border-gray-300 px-2.5 py-1 text-[0.78rem] font-semibold text-gray-700 transition hover:bg-gray-50">Editar</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="px-4 py-8 text-center text-sm text-gray-400">Non hai equipos rexistrados.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
