@@ -33,11 +33,18 @@
                 {{ is_privileged ? 'Mantemento técnico e estado das liñas de produción' : 'As túas incidencias abertas e o historial das que reportaches' }}
             </p>
         </div>
-        <a href="{{ path('app_issue_new') }}"
-           class="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover">
-            <svg class="size-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
-            Nova incidencia
-        </a>
+        <div class="flex items-center gap-2.5">
+            <a href="{{ path('app_issue_export') }}"
+               class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+                <svg class="size-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Exportar
+            </a>
+            <a href="{{ path('app_issue_new') }}"
+               class="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover">
+                <svg class="size-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+                Nova incidencia
+            </a>
+        </div>
     </div>
 
     <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">

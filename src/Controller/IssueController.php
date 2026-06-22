@@ -9,9 +9,12 @@ use App\Form\IssueType;
 use App\Repository\IssueRepository;
 use App\Security\Voter\IssueVoter;
 use Doctrine\ORM\EntityManagerInterface;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -22,20 +25,74 @@ final class IssueController extends AbstractController
     #[Route(name: 'app_issue_index', methods: ['GET'])]
     public function index(IssueRepository $issueRepository): Response
     {
-        /** @var User $user */
-        $user = $this->getUser();
-        $isPrivileged = $this->isGranted('ROLE_TECHNICIAN');
-
-        // ROLE_USER só ve as incidencias que el mesmo abriu (spec, sección 9).
-        $issues = $isPrivileged
-            ? $issueRepository->findAllOrderedByStatus()
-            : $issueRepository->findCreatedBy($user);
+        $issues = $this->visibleIssues($issueRepository);
 
         return $this->render('issue/index.html.twig', [
             'issues' => $issues,
-            'is_privileged' => $isPrivileged,
+            'is_privileged' => $this->isGranted('ROLE_TECHNICIAN'),
             'stats' => $this->buildStats($issues),
         ]);
+    }
+
+    #[Route('/export', name: 'app_issue_export', methods: ['GET'])]
+    public function export(IssueRepository $issueRepository): StreamedResponse
+    {
+        $issues = $this->visibleIssues($issueRepository);
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Incidencias');
+
+        $headers = ['Estado', 'Inicio', 'Fin', 'Equipo', 'Categoría', 'Tipo', 'Técnicos', 'Creado por', 'Hixiene'];
+        $sheet->fromArray($headers, null, 'A1');
+        $sheet->getStyle('A1:I1')->getFont()->setBold(true);
+
+        $row = 2;
+        foreach ($issues as $issue) {
+            $technicians = implode(', ', array_map(
+                static fn (User $technician) => $technician->getFullName(),
+                $issue->getTechnicians()->toArray()
+            ));
+
+            $sheet->fromArray([
+                $issue->getStatus()->label(),
+                $issue->getStartAt()->format('d/m/Y H:i'),
+                $issue->getEndAt()?->format('d/m/Y H:i') ?? '',
+                $issue->getDevice()->getName(),
+                $issue->getCategory()->getName(),
+                $issue->getType()->label(),
+                $technicians,
+                $issue->getCreatedBy()->getFullName(),
+                $issue->isOpen() ? '' : ($issue->isHygieneCheckDone() ? 'Verificada' : 'Sen verificar'),
+            ], null, 'A'.$row);
+            ++$row;
+        }
+
+        foreach (range('A', 'I') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
+        $response = new StreamedResponse(function () use ($spreadsheet) {
+            (new Xlsx($spreadsheet))->save('php://output');
+        });
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $response->headers->set('Content-Disposition', 'attachment; filename="incidencias_'.date('Y-m-d').'.xlsx"');
+
+        return $response;
+    }
+
+    /**
+     * @return Issue[]
+     */
+    private function visibleIssues(IssueRepository $issueRepository): array
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        // ROLE_USER só ve as incidencias que el mesmo abriu (spec, sección 9).
+        return $this->isGranted('ROLE_TECHNICIAN')
+            ? $issueRepository->findAllOrderedByStatus()
+            : $issueRepository->findCreatedBy($user);
     }
 
     #[Route('/new', name: 'app_issue_new', methods: ['GET', 'POST'])]
@@ -110,7 +167,7 @@ final class IssueController extends AbstractController
     public function close(Request $request, Issue $issue, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('close'.$issue->getId(), $request->getPayload()->getString('_token'))) {
-            $issue->close();
+            $issue->close(hygieneCheckDone: $request->getPayload()->getBoolean('hygieneCheckDone'));
             $entityManager->flush();
             $this->addFlash('success', 'Incidencia pechada correctamente.');
         }

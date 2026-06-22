@@ -45,8 +45,12 @@
             {% endif %}
 
             {% if issue.open and is_granted('ISSUE_CLOSE', issue) %}
-                <form method="post" action="{{ path('app_issue_close', {id: issue.id}) }}">
+                <form method="post" action="{{ path('app_issue_close', {id: issue.id}) }}" class="flex items-center gap-2.5">
                     <input type="hidden" name="_token" value="{{ csrf_token('close' ~ issue.id) }}">
+                    <label class="flex items-center gap-1.5 text-[0.78rem] font-medium text-gray-600">
+                        <input type="checkbox" name="hygieneCheckDone" value="1" class="size-3.5 rounded border-gray-300 text-brand focus:ring-brand-light">
+                        Hixiene verificada
+                    </label>
                     <button type="submit" class="inline-flex items-center rounded-lg bg-brand px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover">Pechar incidencia</button>
                 </form>
             {% endif %}
@@ -78,6 +82,16 @@
                     <div class="mb-0.5 text-[0.7rem] font-semibold tracking-wide text-gray-400 uppercase">Data de fin</div>
                     <div class="text-[0.88rem] font-medium {{ issue.endAt ? 'text-gray-900' : 'text-gray-400' }}">{{ issue.endAt ? issue.endAt|date('d/m/Y H:i') : '—' }}</div>
                 </div>
+                {% if not issue.open %}
+                    <div>
+                        <div class="mb-0.5 text-[0.7rem] font-semibold tracking-wide text-gray-400 uppercase">Hixiene</div>
+                        {% if issue.hygieneCheckDone %}
+                            <span class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-[0.72rem] font-semibold text-green-600">Verificada</span>
+                        {% else %}
+                            <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-[0.72rem] font-semibold text-amber-600">Sen verificar</span>
+                        {% endif %}
+                    </div>
+                {% endif %}
                 <div>
                     <div class="mb-0.5 text-[0.7rem] font-semibold tracking-wide text-gray-400 uppercase">Técnicos asignados</div>
                     <div class="text-[0.88rem] font-medium {{ issue.technicians|length > 0 ? 'text-gray-900' : 'text-gray-400' }}">

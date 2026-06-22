@@ -114,6 +114,9 @@ final class IssueApiController extends AbstractController
             }
             $issue->setStatus($status);
         }
+        if (array_key_exists('hygieneCheckDone', $data)) {
+            $issue->setHygieneCheckDone((bool) $data['hygieneCheckDone']);
+        }
         if (array_key_exists('technicianIds', $data) && is_array($data['technicianIds'])) {
             foreach ($issue->getTechnicians()->toArray() as $existing) {
                 $issue->removeTechnician($existing);
@@ -148,6 +151,7 @@ final class IssueApiController extends AbstractController
             'endAt' => $issue->getEndAt()?->format(\DateTimeInterface::ATOM),
             'type' => $issue->getType()->value,
             'status' => $issue->getStatus()->value,
+            'hygieneCheckDone' => $issue->isHygieneCheckDone(),
             'device' => ['id' => $issue->getDevice()->getId(), 'name' => $issue->getDevice()->getName()],
             'category' => ['id' => $issue->getCategory()->getId(), 'name' => $issue->getCategory()->getName()],
             'technicians' => array_map(

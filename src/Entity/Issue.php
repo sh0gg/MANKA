@@ -29,6 +29,13 @@ class Issue
     #[ORM\Column(length: 20, enumType: IssueStatus::class)]
     private IssueStatus $status = IssueStatus::OPEN;
 
+    /**
+     * Indica se se verificaron as tarefas de hixiene/limpeza tras resolver a incidencia
+     * (relevante en equipos de contacto alimentario, p. ex. cámaras frigoríficas).
+     */
+    #[ORM\Column]
+    private bool $hygieneCheckDone = false;
+
     #[ORM\ManyToOne(inversedBy: 'issues')]
     #[ORM\JoinColumn(nullable: false)]
     private ?IssueCategory $category = null;
@@ -124,10 +131,23 @@ class Issue
     /**
      * Pecha a incidencia, marcando a data de fin.
      */
-    public function close(\DateTimeImmutable $endAt = new \DateTimeImmutable()): static
+    public function close(\DateTimeImmutable $endAt = new \DateTimeImmutable(), bool $hygieneCheckDone = false): static
     {
         $this->status = IssueStatus::CLOSED;
         $this->endAt = $endAt;
+        $this->hygieneCheckDone = $hygieneCheckDone;
+
+        return $this;
+    }
+
+    public function isHygieneCheckDone(): bool
+    {
+        return $this->hygieneCheckDone;
+    }
+
+    public function setHygieneCheckDone(bool $hygieneCheckDone): static
+    {
+        $this->hygieneCheckDone = $hygieneCheckDone;
 
         return $this;
     }
