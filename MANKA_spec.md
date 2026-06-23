@@ -18,7 +18,7 @@ MANKA é un produto SaaS propio de Galicloud, lixeiro e adaptable, pensado para 
 | Compoñente | Tecnoloxía |
 |---|---|
 | Linguaxe backend | PHP 8.4 |
-| Framework | Symfony 7.2 |
+| Framework | Symfony 8.0 |
 | Autenticación e roles | Symfony Security Component |
 | ORM | Doctrine ORM 3.6 |
 | Base de datos | PostgreSQL 16 |
@@ -46,7 +46,7 @@ Patrón **MVC** de Symfony:
 
 | Entidade | Campos | Relacións |
 |---|---|---|
-| `Issue` | id, startAt, endAt, type (preventivo/correctivo), status (open/closed) | ManyToOne → Device, ManyToOne → IssueCategory, ManyToMany → User (técnicos), ManyToOne → User (creador) |
+| `Issue` | id, startAt, endAt, type (preventivo/correctivo), status (open/closed), hygieneCheckDone (verificación de hixiene ao pechar, relevante en equipos de contacto alimentario) | ManyToOne → Device, ManyToOne → IssueCategory, ManyToMany → User (técnicos), ManyToOne → User (creador) |
 | `Device` | id, name | OneToMany → Issue |
 | `User` | id, email, password, roles, name, surname, active | ManyToMany → Issue (como técnico), OneToMany → Issue (como creador), OneToMany → Observation |
 | `IssueCategory` | id, name | OneToMany → Issue |
@@ -94,7 +94,7 @@ Xestionados co compoñente Security de Symfony (RBAC).
 
 1. **Apertura**: calquera usuario autenticado (calquera rol) pode rexistrar unha nova incidencia indicando equipo, categoría e tipo. Créase en estado `open`.
 2. **Seguimento**: calquera usuario pode engadir observacións (mensaxes cronolóxicos con autor e data) mentres a incidencia está aberta.
-3. **Resolución**: os técnicos e administradores pechan a incidencia indicando a data de fin. Os traballadores só poden pechar as que eles mesmos abriron.
+3. **Resolución**: os técnicos e administradores pechan a incidencia indicando a data de fin. Os traballadores só poden pechar as que eles mesmos abriron. Ao pechar, ábrese un modal de confirmación que inclúe un checkbox "Hixiene verificada" (relevante en equipos de contacto alimentario, p. ex. cámaras frigoríficas).
 4. **Eliminación**: só `ROLE_TECHNICIAN` e `ROLE_ADMIN` poden eliminar incidencias. Acción irreversible.
 
 ---
@@ -185,7 +185,8 @@ Footer do sidebar: avatar con iniciais + nome + rol do usuario autenticado.
 
 #### Detalle de incidencia (`/issues/{id}`)
 - Layout dúas columnas: datos da incidencia + observacións
-- Datos: equipo, categoría, tipo, data inicio, data fin, técnicos asignados, reportado por
+- Datos: equipo, categoría, tipo, data inicio, data fin, técnicos asignados, reportado por, estado de hixiene (unha vez pechada)
+- "Pechar incidencia" abre un modal de confirmación co checkbox "Hixiene verificada" (non un checkbox suelto xunto ao botón)
 - Observacións: lista cronolóxica con avatar, nome, rol e data de cada mensaxe; área de texto para engadir nova observación
 - Botóns de acción segundo rol:
   - `ROLE_USER`: só "Pechar incidencia" (se é o creador)
@@ -321,4 +322,4 @@ Obrigacións fiscais: Imposto de Sociedades, IVE en facturas de servizos, retenc
 - PhpSpreadsheet úsase só para exportación desde a interface web, non como endpoint da API
 - Os usuarios **non se rexistran**: créanse exclusivamente dende o panel de administración
 - O campo `active` en `User` permite desactivación lóxica sen eliminar datos históricos
-- Symfony 7.2 (non 8.x, non existe esa versión)
+- Symfony 8.0 (versión confirmada; composer.json é a fonte de verdade)
