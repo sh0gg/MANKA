@@ -13,8 +13,9 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  * Regras de permisos sobre unha Issue concreta (ver spec, sección 5 e 6).
  *
  * - ROLE_TECHNICIAN e ROLE_ADMIN: acceso completo a calquera incidencia.
- * - ROLE_USER: só pode ver/pechar as incidencias que el mesmo abriu, e nunca
- *   pode editalas nin eliminalas.
+ * - ROLE_USER: só pode ver/pechar/reabrir as incidencias que el mesmo abriu
+ *   (reabrir cobre o caso de que o fallo non se solucionase realmente), e
+ *   nunca pode editalas nin eliminalas.
  * - Engadir observacións está permitido a calquera usuario autenticado
  *   mentres a incidencia siga aberta (spec, sección 5: "Pode engadir
  *   observacións a calquera incidencia aberta").
@@ -24,6 +25,7 @@ class IssueVoter extends Voter
     public const string VIEW = 'ISSUE_VIEW';
     public const string EDIT = 'ISSUE_EDIT';
     public const string CLOSE = 'ISSUE_CLOSE';
+    public const string REOPEN = 'ISSUE_REOPEN';
     public const string DELETE = 'ISSUE_DELETE';
     public const string ADD_OBSERVATION = 'ISSUE_ADD_OBSERVATION';
 
@@ -38,6 +40,7 @@ class IssueVoter extends Voter
             self::VIEW,
             self::EDIT,
             self::CLOSE,
+            self::REOPEN,
             self::DELETE,
             self::ADD_OBSERVATION,
         ], true);
@@ -67,7 +70,7 @@ class IssueVoter extends Voter
         $isOwner = $issue->getCreatedBy() === $user;
 
         return match ($attribute) {
-            self::VIEW, self::CLOSE => $isOwner,
+            self::VIEW, self::CLOSE, self::REOPEN => $isOwner,
             default => false, // EDIT, DELETE: reservados a técnicos/administradores
         };
     }

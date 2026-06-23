@@ -26,6 +26,57 @@ final class UserController extends AbstractController
         ]);
     }
 
+    /**
+     * Activa en lote os usuarios seleccionados.
+     */
+    #[Route('/bulk/activate', name: 'app_admin_user_bulk_activate', methods: ['POST'])]
+    public function bulkActivate(Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('bulk_user_activate', $request->getPayload()->getString('_token'))) {
+            return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        $users = $userRepository->findBy(['id' => $request->getPayload()->all('ids')]);
+        foreach ($users as $user) {
+            $user->setActive(true);
+        }
+
+        $entityManager->flush();
+        $this->addFlash('success', sprintf('%d usuario(s) activado(s).', count($users)));
+
+        return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    /**
+     * Desactiva en lote os usuarios seleccionados (desactivación lóxica, spec
+     * sección 8: o campo "active" preserva a trazabilidade sen eliminar
+     * datos). Nunca se borran usuarios. O administrador non pode
+     * autodesactivarse para evitar quedar bloqueado fóra do panel.
+     */
+    #[Route('/bulk/deactivate', name: 'app_admin_user_bulk_deactivate', methods: ['POST'])]
+    public function bulkDeactivate(Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('bulk_user_deactivate', $request->getPayload()->getString('_token'))) {
+            return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        $users = $userRepository->findBy(['id' => $request->getPayload()->all('ids')]);
+        $currentUser = $this->getUser();
+
+        $deactivated = 0;
+        foreach ($users as $user) {
+            if ($user !== $currentUser) {
+                $user->setActive(false);
+                ++$deactivated;
+            }
+        }
+
+        $entityManager->flush();
+        $this->addFlash('success', sprintf('%d usuario(s) desactivado(s).', $deactivated));
+
+        return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
+    }
+
     #[Route('/new', name: 'app_admin_user_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {

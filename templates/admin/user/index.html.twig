@@ -15,68 +15,97 @@
         </a>
     </div>
 
-    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
-        {# Táboa para pantallas sm+ #}
-        <div class="hidden overflow-x-auto sm:block">
-            <table class="w-full text-sm">
-                <thead class="border-b border-gray-200 bg-gray-50">
-                <tr>
-                    <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Usuario</th>
-                    <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Rol</th>
-                    <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Estado</th>
-                    <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Último acceso</th>
-                    <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Accións</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for user in users %}
-                    <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                        <td class="px-4 py-3">
-                            <div class="flex items-center gap-2.5">
-                                {{ include('_components/avatar.html.twig', {user: user, size: 32}) }}
-                                <div>
-                                    <div class="text-sm font-semibold text-gray-900">{{ user.fullName }}</div>
-                                    <div class="text-eyebrow text-gray-500">{{ user.email }}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-4 py-3">{{ include('_components/role_badge.html.twig', {user: user}) }}</td>
-                        <td class="px-4 py-3">
-                            {% if user.active %}
-                                <span class="inline-flex items-center gap-1.5 text-meta text-gray-700"><span class="size-1.5 rounded-full bg-green-600"></span> Activo</span>
-                            {% else %}
-                                <span class="inline-flex items-center gap-1.5 text-meta text-gray-400"><span class="size-1.5 rounded-full bg-gray-400"></span> Inactivo</span>
-                            {% endif %}
-                        </td>
-                        <td class="px-4 py-3 text-meta text-gray-500">{{ user.lastLoginAt ? user.lastLoginAt|date('d/m/Y H:i') : '—' }}</td>
-                        <td class="px-4 py-3">
-                            <a href="{{ path('app_admin_user_edit', {id: user.id}) }}" class="inline-flex items-center rounded-lg border border-gray-300 px-2.5 py-1 text-meta font-semibold text-gray-700 transition hover:bg-gray-50">Editar</a>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+    <div data-controller="bulk-select">
+        <div data-bulk-select-target="bar"
+             class="mb-3.5 hidden items-center justify-between gap-3 rounded-xl border border-brand-light/30 bg-accent px-4 py-2.5">
+            <span class="text-sm font-medium text-gray-700"><span data-bulk-select-target="count">0</span> seleccionado(s)</span>
+            <div class="flex gap-2">
+                <form method="post" action="{{ path('app_admin_user_bulk_activate') }}" data-action="submit->bulk-select#submitWithIds">
+                    <input type="hidden" name="_token" value="{{ csrf_token('bulk_user_activate') }}">
+                    <button type="submit"
+                            class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3.5 py-1.5 text-[0.82rem] font-semibold text-gray-700 transition hover:bg-gray-50">Activar</button>
+                </form>
+                <form method="post" action="{{ path('app_admin_user_bulk_deactivate') }}" data-action="submit->bulk-select#submitWithIds">
+                    <input type="hidden" name="_token" value="{{ csrf_token('bulk_user_deactivate') }}">
+                    <button type="submit"
+                            class="inline-flex items-center rounded-lg bg-brand px-3.5 py-1.5 text-[0.82rem] font-semibold text-white transition hover:bg-brand-hover">Desactivar</button>
+                </form>
+            </div>
         </div>
 
-        {# Lista de cards para móbil #}
-        <div class="flex flex-col divide-y divide-gray-100 sm:hidden">
-            {% for user in users %}
-                <a href="{{ path('app_admin_user_edit', {id: user.id}) }}" class="flex items-center justify-between gap-3 px-4 py-3.5 hover:bg-gray-50">
-                    <div class="flex min-w-0 items-center gap-2.5">
-                        {{ include('_components/avatar.html.twig', {user: user, size: 32}) }}
-                        <div class="min-w-0">
-                            <div class="truncate text-sm font-semibold text-gray-900">{{ user.fullName }}</div>
-                            <div class="mt-0.5 flex items-center gap-1.5">
-                                {{ include('_components/role_badge.html.twig', {user: user}) }}
-                                {% if not user.active %}
-                                    <span class="text-[0.7rem] text-gray-400">· Inactivo</span>
+        <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+            {# Táboa para pantallas sm+ #}
+            <div class="hidden overflow-x-auto sm:block">
+                <table class="w-full text-sm">
+                    <thead class="border-b border-gray-200 bg-gray-50">
+                    <tr>
+                        <th class="w-px px-4 py-2.5">
+                            <input type="checkbox" data-bulk-select-target="selectAll" data-action="bulk-select#toggleAll"
+                                   class="size-3.5 rounded border-gray-300 text-brand focus:ring-brand-light">
+                        </th>
+                        <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Usuario</th>
+                        <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Rol</th>
+                        <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Estado</th>
+                        <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Último acceso</th>
+                        <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Accións</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for user in users %}
+                        <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                            <td class="px-4 py-3">
+                                {% if user != app.user %}
+                                    <input type="checkbox" data-bulk-select-target="checkbox" data-action="bulk-select#refresh" value="{{ user.id }}"
+                                           class="size-3.5 rounded border-gray-300 text-brand focus:ring-brand-light">
                                 {% endif %}
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-2.5">
+                                    {{ include('_components/avatar.html.twig', {user: user, size: 32}) }}
+                                    <div>
+                                        <div class="text-sm font-semibold text-gray-900">{{ user.fullName }}</div>
+                                        <div class="text-eyebrow text-gray-500">{{ user.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">{{ include('_components/role_badge.html.twig', {user: user}) }}</td>
+                            <td class="px-4 py-3">
+                                {% if user.active %}
+                                    <span class="inline-flex items-center gap-1.5 text-meta text-gray-700"><span class="size-1.5 rounded-full bg-green-600"></span> Activo</span>
+                                {% else %}
+                                    <span class="inline-flex items-center gap-1.5 text-meta text-gray-400"><span class="size-1.5 rounded-full bg-gray-400"></span> Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-meta text-gray-500">{{ user.lastLoginAt ? user.lastLoginAt|date('d/m/Y H:i') : '—' }}</td>
+                            <td class="px-4 py-3">
+                                <a href="{{ path('app_admin_user_edit', {id: user.id}) }}" class="inline-flex items-center rounded-lg border border-gray-300 px-2.5 py-1 text-meta font-semibold text-gray-700 transition hover:bg-gray-50">Editar</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {# Lista de cards para móbil #}
+            <div class="flex flex-col divide-y divide-gray-100 sm:hidden">
+                {% for user in users %}
+                    <a href="{{ path('app_admin_user_edit', {id: user.id}) }}" class="flex items-center justify-between gap-3 px-4 py-3.5 hover:bg-gray-50">
+                        <div class="flex min-w-0 items-center gap-2.5">
+                            {{ include('_components/avatar.html.twig', {user: user, size: 32}) }}
+                            <div class="min-w-0">
+                                <div class="truncate text-sm font-semibold text-gray-900">{{ user.fullName }}</div>
+                                <div class="mt-0.5 flex items-center gap-1.5">
+                                    {{ include('_components/role_badge.html.twig', {user: user}) }}
+                                    {% if not user.active %}
+                                        <span class="text-[0.7rem] text-gray-400">· Inactivo</span>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <svg class="size-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </a>
-            {% endfor %}
+                        <svg class="size-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </a>
+                {% endfor %}
+            </div>
         </div>
     </div>
 {% endblock %}

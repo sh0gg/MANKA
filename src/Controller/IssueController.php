@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Issue;
 use App\Entity\Observation;
 use App\Entity\User;
+use App\Enum\IssueStatus;
 use App\Form\IssueType;
 use App\Repository\IssueRepository;
 use App\Security\Voter\IssueVoter;
@@ -130,6 +131,63 @@ final class IssueController extends AbstractController
             'issue' => $issue,
             'form' => $form,
         ]);
+    }
+
+    /**
+     * Pecha en lote as incidencias seleccionadas (e endAt = agora). Saltea as
+     * que xa estean pechadas ou as que o usuario non teña permiso para pechar
+     * (mesma regra que o peche individual, ver IssueVoter::CLOSE).
+     */
+    #[Route('/bulk/close', name: 'app_issue_bulk_close', methods: ['POST'])]
+    public function bulkClose(Request $request, IssueRepository $issueRepository, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('bulk_issue_close', $request->getPayload()->getString('_token'))) {
+            return $this->redirectToRoute('app_issue_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        $issues = $issueRepository->findBy(['id' => $request->getPayload()->all('ids')]);
+
+        $closed = 0;
+        foreach ($issues as $issue) {
+            if ($issue->isOpen() && $this->isGranted(IssueVoter::CLOSE, $issue)) {
+                $issue->close();
+                ++$closed;
+            }
+        }
+
+        $entityManager->flush();
+        $this->addFlash('success', sprintf('%d incidencia(s) pechada(s).', $closed));
+
+        return $this->redirectToRoute('app_issue_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    /**
+     * Reabre en lote as incidencias seleccionadas: status volve a "open" e
+     * límpanse endAt e hygieneCheckDone, coma se nunca se pechasen.
+     */
+    #[Route('/bulk/reopen', name: 'app_issue_bulk_reopen', methods: ['POST'])]
+    public function bulkReopen(Request $request, IssueRepository $issueRepository, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('bulk_issue_reopen', $request->getPayload()->getString('_token'))) {
+            return $this->redirectToRoute('app_issue_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        $issues = $issueRepository->findBy(['id' => $request->getPayload()->all('ids')]);
+
+        $reopened = 0;
+        foreach ($issues as $issue) {
+            if (!$issue->isOpen() && $this->isGranted(IssueVoter::REOPEN, $issue)) {
+                $issue->setStatus(IssueStatus::OPEN);
+                $issue->setEndAt(null);
+                $issue->setHygieneCheckDone(false);
+                ++$reopened;
+            }
+        }
+
+        $entityManager->flush();
+        $this->addFlash('success', sprintf('%d incidencia(s) reaberta(s).', $reopened));
+
+        return $this->redirectToRoute('app_issue_index', [], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/{id}', name: 'app_issue_show', methods: ['GET'])]

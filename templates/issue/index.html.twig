@@ -47,89 +47,116 @@
         </div>
     </div>
 
-    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
-        {# Táboa para pantallas sm+ #}
-        <div class="hidden overflow-x-auto sm:block">
-            <table class="w-full text-sm">
-                <thead class="border-b border-gray-200 bg-gray-50">
-                <tr>
-                    <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Estado</th>
-                    <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Inicio</th>
-                    <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Equipo</th>
-                    <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Categoría</th>
-                    <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Tipo</th>
-                    <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Técnicos</th>
-                    <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Accións</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for issue in issues %}
-                    <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                        <td class="px-4 py-3.5">
-                            {% if issue.open %}
-                                <span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-0.5 text-eyebrow font-semibold text-red-600">
-                                    <span class="size-1.5 animate-pulse rounded-full bg-red-500"></span>
-                                    Aberta
-                                </span>
-                            {% else %}
-                                <span class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-eyebrow font-semibold text-green-600">Pechada</span>
-                            {% endif %}
-                        </td>
-                        <td class="px-4 py-3.5 whitespace-nowrap font-mono text-meta text-gray-500">{{ issue.startAt|date('d/m/Y H:i') }}</td>
-                        <td class="px-4 py-3.5 font-semibold text-gray-900">{{ issue.device.name }}</td>
-                        <td class="px-4 py-3.5 text-gray-700">{{ issue.category.name }}</td>
-                        <td class="px-4 py-3.5">
-                            {% if issue.type.value == 'preventivo' %}
-                                <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-eyebrow font-semibold text-blue-600">Preventivo</span>
-                            {% else %}
-                                <span class="inline-flex items-center rounded-full bg-orange-50 px-2.5 py-0.5 text-eyebrow font-semibold text-orange-600">Correctivo</span>
-                            {% endif %}
-                        </td>
-                        <td class="px-4 py-3.5 text-gray-500">
-                            <div class="max-w-[180px] truncate">{{ issue.technicians|length > 0 ? issue.technicians|map(t => t.fullName)|join(', ') : '—' }}</div>
-                        </td>
-                        <td class="px-4 py-3.5">
-                            <a href="{{ path('app_issue_show', {id: issue.id}) }}"
-                               class="inline-flex items-center rounded-lg border border-gray-300 px-2.5 py-1 text-meta font-semibold text-gray-700 transition hover:bg-gray-50">Ver</a>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-400">Non hai incidencias rexistradas.</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+    <div data-controller="bulk-select">
+        <div data-bulk-select-target="bar"
+             class="mb-3.5 hidden items-center justify-between gap-3 rounded-xl border border-brand-light/30 bg-accent px-4 py-2.5">
+            <span class="text-sm font-medium text-gray-700"><span data-bulk-select-target="count">0</span> seleccionada(s)</span>
+            <div class="flex gap-2">
+                <form method="post" action="{{ path('app_issue_bulk_reopen') }}" data-action="submit->bulk-select#submitWithIds">
+                    <input type="hidden" name="_token" value="{{ csrf_token('bulk_issue_reopen') }}">
+                    <button type="submit"
+                            class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3.5 py-1.5 text-[0.82rem] font-semibold text-gray-700 transition hover:bg-gray-50">Reabrir seleccionadas</button>
+                </form>
+                <form method="post" action="{{ path('app_issue_bulk_close') }}" data-action="submit->bulk-select#submitWithIds">
+                    <input type="hidden" name="_token" value="{{ csrf_token('bulk_issue_close') }}">
+                    <button type="submit"
+                            class="inline-flex items-center rounded-lg bg-brand px-3.5 py-1.5 text-[0.82rem] font-semibold text-white transition hover:bg-brand-hover">Pechar seleccionadas</button>
+                </form>
+            </div>
         </div>
 
-        {# Lista de cards para móbil #}
-        <div class="flex flex-col divide-y divide-gray-100 sm:hidden">
-            {% for issue in issues %}
-                <a href="{{ path('app_issue_show', {id: issue.id}) }}" class="flex items-center justify-between gap-3 px-4 py-3.5 hover:bg-gray-50">
-                    <div class="min-w-0 flex-1">
-                        <div class="mb-1.5 flex items-center gap-1.5">
-                            {% if issue.open %}
-                                <span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[0.7rem] font-semibold text-red-600">
-                                    <span class="size-1.5 animate-pulse rounded-full bg-red-500"></span>
-                                    Aberta
-                                </span>
-                            {% else %}
-                                <span class="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-[0.7rem] font-semibold text-green-600">Pechada</span>
-                            {% endif %}
-                            {% if issue.type.value == 'preventivo' %}
-                                <span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[0.7rem] font-semibold text-blue-600">Prev.</span>
-                            {% else %}
-                                <span class="inline-flex items-center rounded-full bg-orange-50 px-2 py-0.5 text-[0.7rem] font-semibold text-orange-600">Corr.</span>
-                            {% endif %}
+        <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+            {# Táboa para pantallas sm+ #}
+            <div class="hidden overflow-x-auto sm:block">
+                <table class="w-full text-sm">
+                    <thead class="border-b border-gray-200 bg-gray-50">
+                    <tr>
+                        <th class="w-px px-4 py-2.5">
+                            <input type="checkbox" data-bulk-select-target="selectAll" data-action="bulk-select#toggleAll"
+                                   class="size-3.5 rounded border-gray-300 text-brand focus:ring-brand-light">
+                        </th>
+                        <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Estado</th>
+                        <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Inicio</th>
+                        <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Equipo</th>
+                        <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Categoría</th>
+                        <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Tipo</th>
+                        <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Técnicos</th>
+                        <th class="px-4 py-2.5 text-left text-eyebrow font-semibold tracking-wide text-gray-500 uppercase">Accións</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for issue in issues %}
+                        <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50 {{ not issue.open ? 'opacity-70' }}">
+                            <td class="px-4 py-3.5">
+                                <input type="checkbox" data-bulk-select-target="checkbox" data-action="bulk-select#refresh" value="{{ issue.id }}"
+                                       class="size-3.5 rounded border-gray-300 text-brand focus:ring-brand-light">
+                            </td>
+                            <td class="px-4 py-3.5">
+                                {% if issue.open %}
+                                    <span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-0.5 text-eyebrow font-semibold text-red-600">
+                                        <span class="size-1.5 animate-pulse rounded-full bg-red-500"></span>
+                                        Aberta
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-eyebrow font-semibold text-green-600">Pechada</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3.5 whitespace-nowrap font-mono text-meta text-gray-500">{{ issue.startAt|date('d/m/Y H:i') }}</td>
+                            <td class="px-4 py-3.5 font-semibold text-gray-900">{{ issue.device.name }}</td>
+                            <td class="px-4 py-3.5 text-gray-700">{{ issue.category.name }}</td>
+                            <td class="px-4 py-3.5">
+                                {% if issue.type.value == 'preventivo' %}
+                                    <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-eyebrow font-semibold text-blue-600">Preventivo</span>
+                                {% else %}
+                                    <span class="inline-flex items-center rounded-full bg-orange-50 px-2.5 py-0.5 text-eyebrow font-semibold text-orange-600">Correctivo</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3.5 text-gray-500">
+                                <div class="max-w-[180px] truncate">{{ issue.technicians|length > 0 ? issue.technicians|map(t => t.fullName)|join(', ') : '—' }}</div>
+                            </td>
+                            <td class="px-4 py-3.5">
+                                <a href="{{ path('app_issue_show', {id: issue.id}) }}"
+                                   class="inline-flex items-center rounded-lg border border-gray-300 px-2.5 py-1 text-meta font-semibold text-gray-700 transition hover:bg-gray-50">Ver</a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="px-4 py-8 text-center text-sm text-gray-400">Non hai incidencias rexistradas.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {# Lista de cards para móbil #}
+            <div class="flex flex-col divide-y divide-gray-100 sm:hidden">
+                {% for issue in issues %}
+                    <a href="{{ path('app_issue_show', {id: issue.id}) }}" class="flex items-center justify-between gap-3 px-4 py-3.5 hover:bg-gray-50">
+                        <div class="min-w-0 flex-1">
+                            <div class="mb-1.5 flex items-center gap-1.5">
+                                {% if issue.open %}
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[0.7rem] font-semibold text-red-600">
+                                        <span class="size-1.5 animate-pulse rounded-full bg-red-500"></span>
+                                        Aberta
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-[0.7rem] font-semibold text-green-600">Pechada</span>
+                                {% endif %}
+                                {% if issue.type.value == 'preventivo' %}
+                                    <span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[0.7rem] font-semibold text-blue-600">Prev.</span>
+                                {% else %}
+                                    <span class="inline-flex items-center rounded-full bg-orange-50 px-2 py-0.5 text-[0.7rem] font-semibold text-orange-600">Corr.</span>
+                                {% endif %}
+                            </div>
+                            <div class="truncate font-semibold text-gray-900">{{ issue.device.name }}</div>
+                            <div class="text-[0.75rem] text-gray-500">{{ issue.category.name }} · {{ issue.startAt|date('d/m H:i') }}</div>
                         </div>
-                        <div class="truncate font-semibold text-gray-900">{{ issue.device.name }}</div>
-                        <div class="text-[0.75rem] text-gray-500">{{ issue.category.name }} · {{ issue.startAt|date('d/m H:i') }}</div>
-                    </div>
-                    <svg class="size-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </a>
-            {% else %}
-                <p class="px-4 py-8 text-center text-sm text-gray-400">Non hai incidencias rexistradas.</p>
-            {% endfor %}
+                        <svg class="size-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </a>
+                {% else %}
+                    <p class="px-4 py-8 text-center text-sm text-gray-400">Non hai incidencias rexistradas.</p>
+                {% endfor %}
+            </div>
         </div>
     </div>
 {% endblock %}

@@ -5,7 +5,7 @@
 {% block content %}
     <div class="mb-6 flex items-start justify-between gap-3">
         <div>
-            <h1 class="text-h1 font-bold text-gray-900">Equipos</h1>
+            <h1 class="text-[1.3rem] font-bold text-gray-900">Equipos</h1>
             <p class="mt-0.5 text-sm text-gray-500">Catálogo de maquinaria e instalacións da planta</p>
         </div>
         <a href="{{ path('app_admin_device_new') }}"
@@ -15,11 +15,27 @@
         </a>
     </div>
 
-    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+    <div data-controller="bulk-select">
+        <div data-bulk-select-target="bar"
+             class="mb-3.5 hidden items-center justify-between gap-3 rounded-xl border border-brand-light/30 bg-accent px-4 py-2.5">
+            <span class="text-sm font-medium text-gray-700"><span data-bulk-select-target="count">0</span> seleccionado(s)</span>
+            <form method="post" action="{{ path('app_admin_device_bulk_delete') }}" data-action="submit->bulk-select#submitWithIds"
+                  data-confirm="Eliminar os equipos seleccionados? Os que teñan incidencias asociadas non se borrarán. Esta acción non se pode desfacer.">
+                <input type="hidden" name="_token" value="{{ csrf_token('bulk_device_delete') }}">
+                <button type="submit"
+                        class="inline-flex items-center rounded-lg bg-red-50 px-3.5 py-1.5 text-[0.82rem] font-semibold text-red-600 transition hover:bg-red-100">Borrar seleccionados</button>
+            </form>
+        </div>
+
+        <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="border-b border-gray-200 bg-gray-50">
                 <tr>
+                    <th class="w-px px-4 py-2.5">
+                        <input type="checkbox" data-bulk-select-target="selectAll" data-action="bulk-select#toggleAll"
+                               class="size-3.5 rounded border-gray-300 text-brand focus:ring-brand-light">
+                    </th>
                     <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Nome</th>
                     <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Incidencias abertas</th>
                     <th class="px-4 py-2.5 text-left text-[0.72rem] font-semibold tracking-wide text-gray-500 uppercase">Total incidencias</th>
@@ -30,6 +46,10 @@
                 <tbody>
                 {% for device in devices %}
                     <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                        <td class="px-4 py-3">
+                            <input type="checkbox" data-bulk-select-target="checkbox" data-action="bulk-select#refresh" value="{{ device.id }}"
+                                   class="size-3.5 rounded border-gray-300 text-brand focus:ring-brand-light">
+                        </td>
                         <td class="px-4 py-3 font-semibold text-gray-900">{{ device.name }}</td>
                         <td class="px-4 py-3">
                             {% if stats[device.id].open > 0 %}
@@ -45,10 +65,11 @@
                         </td>
                     </tr>
                 {% else %}
-                    <tr><td colspan="5" class="px-4 py-8 text-center text-sm text-gray-400">Non hai equipos rexistrados.</td></tr>
+                    <tr><td colspan="6" class="px-4 py-8 text-center text-sm text-gray-400">Non hai equipos rexistrados.</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
+        </div>
         </div>
     </div>
 {% endblock %}

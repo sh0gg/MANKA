@@ -62,7 +62,8 @@ Xestionados co compoñente Security de Symfony (RBAC).
 - Pode abrir novas incidencias
 - Pode consultar o estado das incidencias que el abriu
 - Pode engadir observacións a calquera incidencia aberta
-- Pode pechar as incidencias que el mesmo abriu
+- Pode pechar e **reabrir** as incidencias que el mesmo abriu (reabrir cobre o caso de que o fallo non se solucionase realmente)
+- Pode pechar e reabrir en lote (selección múltiple) só sobre as súas propias incidencias
 - **Non pode** editar campos técnicos (tipo, equipo, categoría, técnicos asignados)
 - **Non pode** ver o historial completo de todas as incidencias
 - **Non pode** eliminar rexistros
@@ -71,7 +72,7 @@ Xestionados co compoñente Security de Symfony (RBAC).
 ### `ROLE_TECHNICIAN` — Técnico de mantemento
 - Herda todos os permisos de `ROLE_USER`
 - Pode ver **todas** as incidencias (historial completo)
-- Pode crear, editar e pechar calquera incidencia
+- Pode crear, editar, pechar e reabrir calquera incidencia, tamén en lote (selección múltiple)
 - Pode asignarse a si mesmo e a outros técnicos a unha incidencia
 - Pode eliminar incidencias (acción irreversible)
 - Pode engadir observacións
@@ -80,8 +81,8 @@ Xestionados co compoñente Security de Symfony (RBAC).
 ### `ROLE_ADMIN` — Administrador
 - Herda todos os permisos de `ROLE_TECHNICIAN`
 - Acceso completo ao panel de administración:
-  - Xestión de usuarios (crear, editar, activar/desactivar)
-  - Xestión do catálogo de equipos
+  - Xestión de usuarios (crear, editar, activar/desactivar, tamén en lote — **nunca se borran** usuarios, só se desactivan; un admin non pode autodesactivarse)
+  - Xestión do catálogo de equipos (crear, editar, **borrar** individualmente ou en lote — só se permite borrar equipos sen incidencias asociadas)
   - Xestión de categorías de incidencia
   - Xestión de API Tokens (xerar, revogar)
 - Visibilidade total sobre todas as incidencias e o historial completo
@@ -94,8 +95,10 @@ Xestionados co compoñente Security de Symfony (RBAC).
 
 1. **Apertura**: calquera usuario autenticado (calquera rol) pode rexistrar unha nova incidencia indicando equipo, categoría e tipo. Créase en estado `open`.
 2. **Seguimento**: calquera usuario pode engadir observacións (mensaxes cronolóxicos con autor e data) mentres a incidencia está aberta.
-3. **Resolución**: os técnicos e administradores pechan a incidencia indicando a data de fin. Os traballadores só poden pechar as que eles mesmos abriron. Ao pechar, ábrese un modal de confirmación que inclúe un checkbox "Hixiene verificada" (relevante en equipos de contacto alimentario, p. ex. cámaras frigoríficas).
-4. **Eliminación**: só `ROLE_TECHNICIAN` e `ROLE_ADMIN` poden eliminar incidencias. Acción irreversible.
+3. **Resolución**: os técnicos e administradores pechan a incidencia indicando a data de fin (a actual). Os traballadores só poden pechar as que eles mesmos abriron. Ao pechar, ábrese un modal de confirmación que inclúe un checkbox "Hixiene verificada" (relevante en equipos de contacto alimentario, p. ex. cámaras frigoríficas).
+4. **Reapertura**: calquera usuario con permiso de peche sobre unha incidencia (técnico/admin en calquera, traballador só nas propias) pode reabrila se detecta que o fallo non se solucionou realmente. Reabrir limpa a data de fin e o estado de hixiene (a incidencia queda coma se nunca se pechase).
+5. **Tratamento masivo**: tanto o peche coma a reapertura admiten selección múltiple na listaxe de incidencias (`/issues`); aplícanse as mesmas regras de permiso fila a fila, saltando en silencio as incidencias non permitidas.
+6. **Eliminación**: só `ROLE_TECHNICIAN` e `ROLE_ADMIN` poden eliminar incidencias. Acción irreversible.
 
 ---
 
@@ -178,7 +181,8 @@ Footer do sidebar: avatar con iniciais + nome + rol do usuario autenticado.
 
 #### Listado de incidencias (`/issues`)
 - Tarxetas de estatísticas no topo: Total incidencias, Abertas, Pechadas, Tempo medio de resolución
-- Táboa con columnas: Estado, Inicio, Equipo, Categoría, Tipo, Técnicos, Accións
+- Táboa con columnas: selección, Estado, Inicio, Equipo, Categoría, Tipo, Técnicos, Accións
+- Selección múltiple de filas (checkbox por fila + "marcar todas") con barra de accións en lote: "Pechar seleccionadas" / "Reabrir seleccionadas". Aplícase a regra de permisos de cada incidencia individualmente
 - Badge animado para incidencias abertas (punto pulsante en vermello)
 - Botón "Nova incidencia" (só visible para `ROLE_TECHNICIAN` e `ROLE_ADMIN`)
 - `ROLE_USER` só ve as súas propias incidencias
@@ -203,11 +207,13 @@ Footer do sidebar: avatar con iniciais + nome + rol do usuario autenticado.
 Cada sección ten a súa propia URL e entrada no sidebar:
 
 **Usuarios** (`/admin/users`):
-- Táboa: avatar con iniciais, nome, email, rol (badge de cor), estado activo/inactivo, último acceso, botón editar
+- Táboa: selección, avatar con iniciais, nome, email, rol (badge de cor), estado activo/inactivo, último acceso, botón editar
+- Selección múltiple con barra de accións en lote: "Activar" / "Desactivar". O propio usuario autenticado non aparece seleccionable (non se pode autodesactivar)
 - Botón "Novo usuario"
 
 **Equipos** (`/admin/devices`):
-- Táboa: nome, incidencias abertas, total incidencias, última incidencia, botón editar
+- Táboa: selección, nome, incidencias abertas, total incidencias, última incidencia, botón editar
+- Selección múltiple con barra de accións en lote: "Borrar seleccionados" (con confirmación). Os equipos con incidencias asociadas non se borran; mostrase un aviso indicando cantos se omitiron
 - Botón "Novo equipo"
 
 **Categorías** (`/admin/categories`):

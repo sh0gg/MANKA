@@ -3,6 +3,7 @@
 {% block title %}Incidencia #{{ issue.id }} — MANKA{% endblock %}
 
 {% block content %}
+<div data-controller="modal">
     <a href="{{ path('app_issue_index') }}" class="mb-4.5 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-900">
         <svg class="size-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Volver ás incidencias
@@ -45,14 +46,8 @@
             {% endif %}
 
             {% if issue.open and is_granted('ISSUE_CLOSE', issue) %}
-                <form method="post" action="{{ path('app_issue_close', {id: issue.id}) }}" class="flex flex-wrap items-center gap-2.5">
-                    <input type="hidden" name="_token" value="{{ csrf_token('close' ~ issue.id) }}">
-                    <label class="flex items-center gap-1.5 text-meta font-medium text-gray-600">
-                        <input type="checkbox" name="hygieneCheckDone" value="1" class="size-3.5 rounded border-gray-300 text-brand focus:ring-brand-light">
-                        Hixiene verificada
-                    </label>
-                    <button type="submit" class="inline-flex items-center rounded-lg bg-brand px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover">Pechar incidencia</button>
-                </form>
+                <button type="button" data-action="modal#open"
+                        class="inline-flex items-center rounded-lg bg-brand px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover">Pechar incidencia</button>
             {% endif %}
         </div>
     </div>
@@ -143,4 +138,32 @@
             </div>
         </div>
     </div>
+
+    {% if issue.open and is_granted('ISSUE_CLOSE', issue) %}
+        <div data-modal-target="dialog"
+             data-action="keydown.esc@window->modal#closeOnEscape click->modal#closeOnOverlayClick"
+             class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-900/45 p-4">
+            <div class="w-full max-w-sm rounded-xl bg-white p-5 shadow-xl">
+                <h2 class="text-h1 font-bold text-gray-900">Pechar incidencia</h2>
+                <p class="mt-1.5 text-sm text-gray-500">A incidencia quedará marcada como pechada coa data e hora actuais.</p>
+
+                <form method="post" action="{{ path('app_issue_close', {id: issue.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('close' ~ issue.id) }}">
+
+                    <label class="mt-4 flex items-center gap-2 text-sm font-medium text-gray-700">
+                        <input type="checkbox" name="hygieneCheckDone" value="1" class="size-4 rounded border-gray-300 text-brand focus:ring-brand-light">
+                        Hixiene verificada
+                    </label>
+
+                    <div class="mt-5 flex justify-end gap-2.5">
+                        <button type="button" data-action="modal#close"
+                                class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Cancelar</button>
+                        <button type="submit"
+                                class="inline-flex items-center rounded-lg bg-brand px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover">Confirmar peche</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+</div>
 {% endblock %}

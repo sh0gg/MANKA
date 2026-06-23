@@ -46,6 +46,43 @@ final class DeviceController extends AbstractController
         ]);
     }
 
+    /**
+     * Borra en lote os equipos seleccionados. Sáltanse os que teñan
+     * incidencias asociadas (Issue.device é nullable: false, non se pode
+     * borrar sen romper a integridade referencial); pensado para limpar
+     * equipos creados por erro durante a carga inicial de datos.
+     */
+    #[Route('/bulk/delete', name: 'app_admin_device_bulk_delete', methods: ['POST'])]
+    public function bulkDelete(Request $request, DeviceRepository $deviceRepository, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('bulk_device_delete', $request->getPayload()->getString('_token'))) {
+            return $this->redirectToRoute('app_admin_device_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        $devices = $deviceRepository->findBy(['id' => $request->getPayload()->all('ids')]);
+
+        $deleted = 0;
+        $skipped = 0;
+        foreach ($devices as $device) {
+            if (0 === $device->getIssues()->count()) {
+                $entityManager->remove($device);
+                ++$deleted;
+            } else {
+                ++$skipped;
+            }
+        }
+
+        $entityManager->flush();
+
+        $message = sprintf('%d equipo(s) eliminado(s).', $deleted);
+        if ($skipped > 0) {
+            $message .= sprintf(' %d omitido(s) por ter incidencias asociadas.', $skipped);
+        }
+        $this->addFlash($skipped > 0 ? 'error' : 'success', $message);
+
+        return $this->redirectToRoute('app_admin_device_index', [], Response::HTTP_SEE_OTHER);
+    }
+
     #[Route('/new', name: 'app_admin_device_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
