@@ -8,6 +8,11 @@
     --color-brand-light: #2e5fa3;
     --color-brand-hover: #162d4a;
     --color-accent: #e8f0f8;
+
+    --text-eyebrow: 0.72rem;  /* labels/badges UPPERCASE */
+    --text-meta: 0.78rem;     /* metadatos, fechas */
+    --text-h1: 1.3rem;        /* títulos de páxina */
+    --text-stat: 1.7rem;      /* números de stat cards */
 }
 
 @layer base {

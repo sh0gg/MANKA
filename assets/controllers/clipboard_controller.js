@@ -12,10 +12,12 @@ export default class extends Controller {
         await navigator.clipboard.writeText(this.textValue);
 
         const button = this.hasButtonTarget ? this.buttonTarget : this.element;
-        const original = button.textContent;
+        const original = button.textContent.trim();
         button.textContent = 'Copiado!';
+        button.dataset.copied = '';
         setTimeout(() => {
             button.textContent = original;
+            delete button.dataset.copied;
         }, 1500);
     }
 }
